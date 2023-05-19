@@ -1,20 +1,21 @@
 package com.group.isolia_api.service.user
 
+import com.group.isolia_api.controller.UserController
 import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.repository.user.UserRepository
-import com.group.isolia_api.schemas.user.request.UserCreateRequest
-import com.group.isolia_api.schemas.user.request.UserLoginRequest
-import com.group.isolia_api.schemas.user.request.UserUpdateRequest
+import com.group.isolia_api.schemas.user.request.*
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 @SpringBootTest
 class UserServiceTest @Autowired constructor(
+    private val userController: UserController,
     private val userRepository: UserRepository,
     private val userService: UserService
 ) {
@@ -40,9 +41,16 @@ class UserServiceTest @Autowired constructor(
         )
 
         // when
-        userService.registerUser(request)
+        val response = userController.registerUser(request)
 
         // then
+        assertThat(response.statusCode.value()).isEqualTo(201)
+        assertThat(response.body?.loginType).isEqualTo(LoginType.EMAIL)
+        assertThat(response.body?.email).isEqualTo("sglee487@naver.com")
+        assertThat(response.body?.displayName).isEqualTo("익명1")
+        assertThat(response.body?.picture32).isEqualTo(null)
+        assertThat(response.body?.picture96).isEqualTo(null)
+
         val results = userRepository.findAll()
         assertThat(results).hasSize(1)
         assertThat(results[0].snsSub).isEqualTo(null)
@@ -79,9 +87,16 @@ class UserServiceTest @Autowired constructor(
             picture32 = null,
             picture96 = null,
         )
-        userService.updateUser(updateRequest)
+        val updateResponse = userController.updateUser(updateRequest)
 
         // then
+        assertThat(updateResponse.statusCode.value()).isEqualTo(202)
+        assertThat(updateResponse.body?.loginType).isEqualTo(LoginType.EMAIL)
+        assertThat(updateResponse.body?.email).isEqualTo("sglee487@naver.com")
+        assertThat(updateResponse.body?.displayName).isEqualTo("익명2")
+        assertThat(updateResponse.body?.picture32).isEqualTo(null)
+        assertThat(updateResponse.body?.picture96).isEqualTo(null)
+
         val results = userRepository.findAll()
         assertThat(results).hasSize(1)
         assertThat(results[0].snsSub).isEqualTo(null)
@@ -115,6 +130,7 @@ class UserServiceTest @Autowired constructor(
             password = "1234",
         )
         val user = userService.loginUser(loginRequest)
+        val loginResponse = userController.loginUser(loginRequest) as ResponseEntity<UserLoginResponse>
 
         // then
         assertThat(user).isNotNull
@@ -125,5 +141,12 @@ class UserServiceTest @Autowired constructor(
         assertThat(user.displayName).isEqualTo("익명1")
         assertThat(user.picture32).isEqualTo(null)
         assertThat(user.picture96).isEqualTo(null)
+
+        assertThat(loginResponse.statusCode.value()).isEqualTo(200)
+        assertThat(loginResponse.body?.loginType).isEqualTo(LoginType.EMAIL)
+        assertThat(loginResponse.body?.email).isEqualTo("sglee487@naver.com")
+        assertThat(loginResponse.body?.displayName).isEqualTo("익명1")
+        assertThat(loginResponse.body?.picture32).isEqualTo(null)
+        assertThat(loginResponse.body?.picture96).isEqualTo(null)
     }
 }

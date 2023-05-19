@@ -12,6 +12,10 @@ class UserCreateResponse(
     val displayName: String = user.displayName
     var picture32: String? = user.picture32
     var picture96: String? = user.picture96
+
+    override fun toString(): String {
+        return "UserCreateResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
+    }
 }
 
 class UserUpdateResponse(
@@ -23,6 +27,10 @@ class UserUpdateResponse(
     val displayName: String = user.displayName
     var picture32: String? = user.picture32
     var picture96: String? = user.picture96
+
+    override fun toString(): String {
+        return "UserUpdateResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
+    }
 }
 
 class UserLoginResponse(
@@ -34,4 +42,8 @@ class UserLoginResponse(
     val displayName: String = user.displayName
     var picture32: String? = user.picture32
     var picture96: String? = user.picture96
+
+    override fun toString(): String {
+        return "UserLoginResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
+    }
 }

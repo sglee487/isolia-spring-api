@@ -4,6 +4,7 @@ import com.group.isolia_api.controller.UserController
 import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.repository.user.UserRepository
 import com.group.isolia_api.schemas.user.request.*
+import com.group.isolia_api.schemas.user.response.UserLoginResponse
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName

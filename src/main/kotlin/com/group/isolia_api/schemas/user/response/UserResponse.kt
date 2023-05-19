@@ -1,4 +1,4 @@
-package com.group.isolia_api.schemas.user.request
+package com.group.isolia_api.schemas.user.response
 
 import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.domain.User

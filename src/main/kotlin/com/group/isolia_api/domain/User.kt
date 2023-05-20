@@ -23,6 +23,8 @@ class User (
     val id: Long? = null
 ) {
 
+    fun getJwtSub(): String = "{id: $id, loginType: $loginType, email: $email}"
+
     fun updateUser(
         displayName: String?,
         password: String,

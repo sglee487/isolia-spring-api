@@ -4,7 +4,8 @@ import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.domain.User
 
 class UserCreateResponse(
-    private val user: User
+    private val user: User,
+    private val _jwt: String
 ) {
     val id: Long = user.id!!
     val loginType: LoginType = user.loginType
@@ -12,6 +13,7 @@ class UserCreateResponse(
     val displayName: String = user.displayName
     var picture32: String? = user.picture32
     var picture96: String? = user.picture96
+    val jwt: String = _jwt
 
     override fun toString(): String {
         return "UserCreateResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
@@ -34,7 +36,8 @@ class UserUpdateResponse(
 }
 
 class UserLoginResponse(
-    private val user: User
+    private val user: User,
+    private val _jwt: String
 ) {
     val id: Long = user.id!!
     val loginType: LoginType = user.loginType
@@ -42,6 +45,8 @@ class UserLoginResponse(
     val displayName: String = user.displayName
     var picture32: String? = user.picture32
     var picture96: String? = user.picture96
+    val jwt: String = _jwt
+
 
     override fun toString(): String {
         return "UserLoginResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"

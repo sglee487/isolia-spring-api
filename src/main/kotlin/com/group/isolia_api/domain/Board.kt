@@ -19,7 +19,7 @@ class Board(
     var updatedAt: Date = Date(System.currentTimeMillis()),
     var deletedAt: Date? = null,
 
-    @OneToOne(mappedBy = "board", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
     val user: User,
 
     @OneToMany(mappedBy = "board", cascade = [CascadeType.ALL], orphanRemoval = true)

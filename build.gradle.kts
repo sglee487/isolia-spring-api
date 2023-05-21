@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.spring") version "1.7.22"
     kotlin("plugin.jpa") version "1.7.22"
+    kotlin("plugin.serialization") version "1.8.21"
 }
 
 group = "com.group"
@@ -29,7 +30,7 @@ dependencies {
     implementation ("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly ("io.jsonwebtoken:jjwt-jackson:0.11.5") // or 'io.jsonwebtoken:jjwt-gson:JJWT_RELEASE_VERSION' for gson
-
+    implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }
 
 tasks.withType<KotlinCompile> {

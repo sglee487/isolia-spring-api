@@ -1,14 +1,22 @@
 package com.group.isolia_api.domain
 
 import jakarta.persistence.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 
 private val encoder = BCryptPasswordEncoder()
-@Entity(name="isolia_user")
-@Table(uniqueConstraints = [UniqueConstraint(name = "user_loginType_email_unique", columnNames = ["loginType", "email"])])
 
-class User (
+@Entity(name = "isolia_user")
+@Table(
+    uniqueConstraints = [UniqueConstraint(
+        name = "user_loginType_email_unique",
+        columnNames = ["loginType", "email"]
+    )]
+)
+
+class User(
     val snsSub: String?,
     @Enumerated(EnumType.STRING)
     val loginType: LoginType = LoginType.EMAIL,
@@ -23,7 +31,7 @@ class User (
     val id: Long? = null
 ) {
 
-    fun getJwtSub(): String = "{id: $id, loginType: $loginType, email: $email}"
+    fun getJwtSub(): String = Json.encodeToString(UserSub(id!!, loginType, email))
 
     fun updateUser(
         displayName: String?,

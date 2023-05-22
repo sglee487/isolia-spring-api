@@ -10,17 +10,23 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest
+@ActiveProfiles("dev")
 class UserServiceTest @Autowired constructor(
     private val userController: UserController,
     private val userRepository: UserRepository,
     private val userService: UserService
 ) {
     private val encoder = BCryptPasswordEncoder()
+
+    @Value("\${spring.env.jwt-secret-key}")
+    private val jwtSecret: String = "default"
 
     @AfterEach
     fun clean() {
@@ -51,6 +57,7 @@ class UserServiceTest @Autowired constructor(
         assertThat(response.body?.displayName).isEqualTo("익명1")
         assertThat(response.body?.picture32).isEqualTo(null)
         assertThat(response.body?.picture96).isEqualTo(null)
+        assertThat(response.body?.jwt).isNotNull
 
         val results = userRepository.findAll()
         assertThat(results).hasSize(1)
@@ -149,5 +156,6 @@ class UserServiceTest @Autowired constructor(
         assertThat(loginResponse.body?.displayName).isEqualTo("익명1")
         assertThat(loginResponse.body?.picture32).isEqualTo(null)
         assertThat(loginResponse.body?.picture96).isEqualTo(null)
+        assertThat(loginResponse.body?.jwt).isNotNull
     }
 }

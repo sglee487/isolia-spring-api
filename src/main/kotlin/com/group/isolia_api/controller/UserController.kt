@@ -49,12 +49,14 @@ class UserController(
             ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
     }
+
     @ResponseBody
     @PatchMapping("/user")
     fun updateUser(@RequestBody request: UserUpdateRequest): ResponseEntity<UserUpdateResponse> {
         val user = userService.updateUser(request)
         return ResponseEntity(UserUpdateResponse(user), HttpStatus.ACCEPTED)
     }
+
     @ResponseBody
     @PostMapping("/user-login")
     fun loginUser(@RequestBody request: UserLoginRequest): ResponseEntity<*> {

@@ -1,5 +1,6 @@
 package com.group.isolia_api.controller
 
+import com.group.isolia_api.domain.Board
 import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.UserSub
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
@@ -39,9 +40,7 @@ class BoardController(
                 .subject
             val userSub = Json.decodeFromString<UserSub>(sub)
 
-            val boardId = boardService.createPost(requestBody, userSub)
-
-            return boardId ?: 0
+            return boardService.createPost(requestBody, userSub)!!
         } catch (e: MalformedJwtException) {
             // 토큰 형식이 유효하지 않음
             println("jwt malformed")
@@ -60,19 +59,14 @@ class BoardController(
             return 0
         } catch (e: Exception) {
             // 기타
-            println("jwt error")
+            println("error")
             return 0
         }
 
     }
 
-    @ResponseBody
     @GetMapping("/board")
-    fun getPosts(@RequestParam("boardType") boardType: BoardType) {
-//        val user = boardService.createBoard(request)
-//
-//        val jwt = generateJwtToken(user.getJwtSub())
-//
-//        ResponseEntity(UserCreateResponse(user, jwt), HttpStatus.CREATED)
+    fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<Board> {
+        return boardService.getBoardList(boardType)
     }
 }

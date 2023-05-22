@@ -1,6 +1,7 @@
 package com.group.isolia_api.service.board
 
 import com.group.isolia_api.domain.Board
+import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.UserSub
 import com.group.isolia_api.repository.board.BoardRepository
 import com.group.isolia_api.repository.user.UserRepository
@@ -26,4 +27,10 @@ class BoardService(
         return boardRepository.save(board).id
     }
 
+//    fun getBoardList(boardType: BoardType? = null): List<Board> = boardType?.let {
+//        boardRepository.findAllByBoardTypeAndActive(it)
+//    } ?: boardRepository.findAllAndActive()
+
+
+    fun getBoardList(boardType: BoardType? = null): List<Board> = boardRepository.findAll()
 }

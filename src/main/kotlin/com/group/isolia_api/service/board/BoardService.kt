@@ -7,6 +7,7 @@ import com.group.isolia_api.repository.board.BoardRepository
 import com.group.isolia_api.repository.user.UserRepository
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
+import com.group.isolia_api.schemas.board.response.BoardPostResponse
 import org.springframework.stereotype.Service
 
 @Service
@@ -34,5 +35,9 @@ class BoardService(
             BoardGetResponse.of(board, board.user) }
     } ?: boardRepository.findAllByActiveIsTrue().map { board ->
         BoardGetResponse.of(board, board.user)
+    }
+
+    fun getBoard(id: Long): BoardPostResponse? = boardRepository.getByIdAndActiveIsTrue(id)?.let { board ->
+        BoardPostResponse.of(board, board.user)
     }
 }

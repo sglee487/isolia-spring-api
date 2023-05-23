@@ -4,6 +4,7 @@ import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.UserSub
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
+import com.group.isolia_api.schemas.board.response.BoardPostResponse
 import com.group.isolia_api.service.board.BoardService
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -68,5 +69,10 @@ class BoardController(
     @GetMapping("/board")
     fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<BoardGetResponse> {
         return boardService.getBoardList(boardType)
+    }
+
+    @GetMapping("/post/", "/post/{id}")
+    fun getPost(@PathVariable("id") id: Long?): BoardPostResponse? = id?.let {
+        boardService.getBoard(it)
     }
 }

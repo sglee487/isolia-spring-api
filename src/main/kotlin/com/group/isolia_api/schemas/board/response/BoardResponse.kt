@@ -11,6 +11,7 @@ data class BoardUserInfo(
     val email: String,
     val displayName: String,
     val picture32: String?,
+    val picture96: String?
 ) {
     companion object {
         fun of(user: User): BoardUserInfo {
@@ -18,7 +19,8 @@ data class BoardUserInfo(
                 id = user.id!!,
                 email = user.email,
                 displayName = user.displayName,
-                picture32 = user.picture32
+                picture32 = user.picture32,
+                picture96 = user.picture96,
             )
         }
     }
@@ -54,6 +56,38 @@ data class BoardGetResponse(
                 updatedAt = board.updatedAt,
                 deletedAt = board.deletedAt,
                 boardUserInfo = BoardUserInfo.of(user),
+                comments = board.comments
+            )
+        }
+    }
+}
+
+data class BoardPostResponse(
+    val id: Long,
+    val title: String,
+    val content: String,
+    val hits: Int = 0,
+    val likes: Int = 0,
+    val dislikes: Int = 0,
+    val createdAt: Date,
+    val updatedAt: Date,
+    val deletedAt: Date?,
+    val userInfo: BoardUserInfo,
+    val comments: List<Comment>
+) {
+    companion object {
+        fun of(board: Board, user: User): BoardPostResponse {
+            return BoardPostResponse(
+                id = board.id!!,
+                title = board.title,
+                content = board.content,
+                hits = board.hits,
+                likes = board.likes,
+                dislikes = board.dislikes,
+                createdAt = board.createdAt,
+                updatedAt = board.updatedAt,
+                deletedAt = board.deletedAt,
+                userInfo = BoardUserInfo.of(user),
                 comments = board.comments
             )
         }

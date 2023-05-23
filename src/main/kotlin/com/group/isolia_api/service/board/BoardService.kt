@@ -29,6 +29,6 @@ class BoardService(
 
 
     fun getBoardList(boardType: BoardType? = null): List<Board> = boardType?.let {
-        boardRepository.findAllByBoardTypeEqualsAndActiveTrue(it)
-    } ?: boardRepository.findAllByActiveTrue()
+        boardRepository.findAllByBoardTypeEqualsAndActiveIsTrue(it)
+    } ?: boardRepository.findAllByActiveIsTrue()
 }

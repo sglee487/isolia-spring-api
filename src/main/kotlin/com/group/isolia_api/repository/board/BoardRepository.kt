@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 
 interface BoardRepository : JpaRepository<Board, Long> {
-    fun findAllByActiveTrue(): List<Board>
+    fun findAllByActiveIsTrue(): List<Board>
 
-    fun findAllByBoardTypeEqualsAndActiveTrue(boardType: BoardType): List<Board>
+    fun findAllByBoardTypeEqualsAndActiveIsTrue(boardType: BoardType): List<Board>
 }

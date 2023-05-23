@@ -1,18 +1,12 @@
 package com.group.isolia_api.repository.board
 
 import com.group.isolia_api.domain.Board
+import com.group.isolia_api.domain.BoardType
 import org.springframework.data.jpa.repository.JpaRepository
 
 
 interface BoardRepository : JpaRepository<Board, Long> {
-//    fun findAllAndActive(): List<Board> {
-//        return findAll()
-//    }
-//    fun findAllByBoardTypeAndActive(boardType: BoardType): List<Board> {
-//        return findAll()
-//    }
-}
+    fun findAllByActiveTrue(): List<Board>
 
-class BoardRepositoryCalss : BoardRepository {
-
+    fun findAllByBoardTypeEqualsAndActiveTrue(boardType: BoardType): List<Board>
 }

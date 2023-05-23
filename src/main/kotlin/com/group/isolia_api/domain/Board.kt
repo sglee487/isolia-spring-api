@@ -14,7 +14,7 @@ class Board(
     var hits: Int = 0,
     var likes: Int = 0,
     var dislikes: Int = 0,
-    var isDeleted: Boolean = false,
+    var active: Boolean = true,
     val createdAt: Date = Date(System.currentTimeMillis()),
     var updatedAt: Date = Date(System.currentTimeMillis()),
     var deletedAt: Date? = null,

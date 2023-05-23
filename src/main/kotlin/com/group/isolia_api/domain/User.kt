@@ -25,6 +25,7 @@ class User(
     var displayName: String,
     var picture32: String?,
     var picture96: String?,
+    var active: Boolean = true,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

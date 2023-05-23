@@ -1,9 +1,9 @@
 package com.group.isolia_api.controller
 
-import com.group.isolia_api.domain.Board
 import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.UserSub
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
+import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.service.board.BoardService
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -66,7 +66,7 @@ class BoardController(
     }
 
     @GetMapping("/board")
-    fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<Board> {
+    fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<BoardGetResponse> {
         return boardService.getBoardList(boardType)
     }
 }

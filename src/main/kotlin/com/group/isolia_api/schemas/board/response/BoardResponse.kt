@@ -1,8 +1,8 @@
 package com.group.isolia_api.schemas.board.response
 
 import com.group.isolia_api.domain.Board
-import com.group.isolia_api.domain.Comment
 import com.group.isolia_api.domain.User
+import com.group.isolia_api.schemas.comment.response.CommentGetResponse
 import java.sql.Date
 
 
@@ -39,7 +39,7 @@ data class BoardGetResponse(
     val updatedAt: Date,
     val deletedAt: Date?,
     val boardUserInfo: BoardUserInfo,
-    val comments: List<Comment>
+    val comments: List<CommentGetResponse>
 ) {
     companion object {
         fun of(board: Board, user: User): BoardGetResponse {
@@ -56,7 +56,7 @@ data class BoardGetResponse(
                 updatedAt = board.updatedAt,
                 deletedAt = board.deletedAt,
                 boardUserInfo = BoardUserInfo.of(user),
-                comments = board.comments
+                comments = board.comments.map { CommentGetResponse.of(it) }
             )
         }
     }
@@ -73,7 +73,7 @@ data class BoardPostResponse(
     val updatedAt: Date,
     val deletedAt: Date?,
     val userInfo: BoardUserInfo,
-    val comments: List<Comment>
+    val comments: List<CommentGetResponse>
 ) {
     companion object {
         fun of(board: Board, user: User): BoardPostResponse {
@@ -88,7 +88,7 @@ data class BoardPostResponse(
                 updatedAt = board.updatedAt,
                 deletedAt = board.deletedAt,
                 userInfo = BoardUserInfo.of(user),
-                comments = board.comments
+                comments = board.comments.map { CommentGetResponse.of(it) }
             )
         }
     }

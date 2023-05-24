@@ -12,12 +12,3 @@ data class BoardPostCreateRequest(
         return "BoardPostCreateRequest(boardType=$boardType, title='$title', content='$content')"
     }
 }
-
-data class BoardCommentCreateRequest(
-    val content: String = ""
-) {
-
-    override fun toString(): String {
-        return "BoardCommentCreateRequest(content='$content')"
-    }
-}

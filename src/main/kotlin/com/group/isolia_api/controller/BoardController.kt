@@ -2,10 +2,10 @@ package com.group.isolia_api.controller
 
 import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.UserSub
-import com.group.isolia_api.schemas.board.request.BoardCommentCreateRequest
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.schemas.board.response.BoardPostResponse
+import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
 import com.group.isolia_api.service.board.BoardService
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -72,7 +72,7 @@ class BoardController(
     fun createPost(
         @RequestHeader("Authorization") authorization: String,
         @PathVariable("boardId") boardId: Long,
-        @RequestBody requestBody: BoardCommentCreateRequest
+        @RequestBody requestBody: CommentCreateRequest
     ): Long {
         try {
             val token = authorization.substringAfter("Bearer ")

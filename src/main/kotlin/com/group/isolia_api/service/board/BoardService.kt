@@ -7,10 +7,10 @@ import com.group.isolia_api.domain.UserSub
 import com.group.isolia_api.repository.board.BoardRepository
 import com.group.isolia_api.repository.comment.CommentRepository
 import com.group.isolia_api.repository.user.UserRepository
-import com.group.isolia_api.schemas.board.request.BoardCommentCreateRequest
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.schemas.board.response.BoardPostResponse
+import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
 import org.springframework.stereotype.Service
 
 @Service
@@ -33,7 +33,7 @@ class BoardService(
         return boardRepository.save(board).id
     }
 
-    fun createComment(request: BoardCommentCreateRequest, boardId: Long, userSub: UserSub): Long {
+    fun createComment(request: CommentCreateRequest, boardId: Long, userSub: UserSub): Long {
         print(userSub)
         print(userSub.id)
         val user = userRepository.getReferenceById(userSub.id)

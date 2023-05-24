@@ -2,6 +2,7 @@ package com.group.isolia_api.controller
 
 import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.UserSub
+import com.group.isolia_api.schemas.board.request.BoardCommentCreateRequest
 import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.schemas.board.response.BoardPostResponse
@@ -66,6 +67,46 @@ class BoardController(
 
     }
 
+    @ResponseBody
+    @PostMapping("/comment/{boardId}")
+    fun createPost(
+        @RequestHeader("Authorization") authorization: String,
+        @PathVariable("boardId") boardId: Long,
+        @RequestBody requestBody: BoardCommentCreateRequest
+    ): Long {
+        try {
+            val token = authorization.substringAfter("Bearer ")
+
+            // get sub from decoded token
+            val sub = Jwts.parserBuilder()
+                .setSigningKey(jwtSecret.toByteArray(StandardCharsets.UTF_8))
+                .build()
+                .parseClaimsJws(token)
+                .body
+                .subject
+            val userSub = Json.decodeFromString<UserSub>(sub)
+
+            return boardService.createComment(requestBody, boardId, userSub)
+        } catch (e: MalformedJwtException) {
+            // 토큰 형식이 유효하지 않음
+            println("jwt malformed")
+            return 0
+        } catch (e: ExpiredJwtException) {
+            // 토큰 만료
+            println("jwt expired")
+            return 0
+        } catch (e: SignatureException) {
+            // 서명(키) 불일치
+            println("jwt signature error")
+            return 0
+        } catch (e: IllegalArgumentException) {
+            // 토큰이 비어있거나, null
+            println("jwt is empty")
+            return 0
+        }
+
+    }
+
     @GetMapping("/board")
     fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<BoardGetResponse> {
         return boardService.getBoardList(boardType)
@@ -75,4 +116,6 @@ class BoardController(
     fun getPost(@PathVariable("id") id: Long?): BoardPostResponse? = id?.let {
         boardService.getBoard(it)
     }
+
+
 }

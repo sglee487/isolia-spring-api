@@ -19,7 +19,7 @@ class BoardService(
     private val userRepository: UserRepository,
     private val commentRepository: CommentRepository
 ) {
-
+    @Transactional
     fun createPost(request: BoardPostCreateRequest, userSub: UserSub): Long? {
         val user = userRepository.getReferenceById(userSub.id)
         val board = Board(
@@ -33,6 +33,7 @@ class BoardService(
         return boardRepository.save(board).id
     }
 
+    @Transactional
     fun createComment(request: CommentCreateRequest, boardId: Long, userSub: UserSub): Long {
         print(userSub)
         print(userSub.id)
@@ -49,7 +50,7 @@ class BoardService(
         return board.id!!
     }
 
-
+    @Transactional
     fun getBoardList(boardType: BoardType? = null): List<BoardGetResponse> = boardType?.let {
         boardRepository.findAllByBoardTypeEqualsAndActiveIsTrue(it).map { board ->
             BoardGetResponse.of(board, board.user)
@@ -58,6 +59,7 @@ class BoardService(
         BoardGetResponse.of(board, board.user)
     }
 
+    @Transactional
     fun getBoard(id: Long): BoardPostResponse? = boardRepository.getByIdAndActiveIsTrue(id)?.let { board ->
         BoardPostResponse.of(board, board.user)
     }

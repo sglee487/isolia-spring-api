@@ -36,8 +36,6 @@ class BoardService(
 
     @Transactional
     fun createComment(request: CommentCreateRequest, boardId: Long, userSub: UserSub): Long {
-        print(userSub)
-        print(userSub.id)
         val user = userRepository.getReferenceById(userSub.id)
         val board = boardRepository.getReferenceById(boardId)
 

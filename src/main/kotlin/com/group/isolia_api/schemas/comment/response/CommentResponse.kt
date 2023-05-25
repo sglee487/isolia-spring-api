@@ -10,6 +10,7 @@ data class CommentGetResponse(
     val createdAt: Date,
     val updatedAt: Date,
     val deletedAt: Date?,
+    // TODO: user info
 ) {
     companion object {
         fun of(comment: Comment): CommentGetResponse {

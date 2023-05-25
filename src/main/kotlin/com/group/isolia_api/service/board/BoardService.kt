@@ -12,6 +12,7 @@ import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.schemas.board.response.BoardPostResponse
 import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class BoardService(

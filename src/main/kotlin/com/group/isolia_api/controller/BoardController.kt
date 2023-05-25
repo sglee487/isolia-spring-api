@@ -8,21 +8,17 @@ import com.group.isolia_api.schemas.board.response.BoardPostResponse
 import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
 import com.group.isolia_api.service.board.BoardService
 import io.jsonwebtoken.ExpiredJwtException
-import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.SignatureException
 import kotlinx.serialization.json.Json
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
-import java.nio.charset.StandardCharsets
 
 @RestController
 class BoardController(
     val boardService: BoardService
 ) {
 
-    @Value("\${spring.env.jwt-secret-key}")
-    private val jwtSecret: String = "default"
+    private val jwtManager: JWTManager = JWTManager()
 
     @ResponseBody
     @PostMapping("/board")
@@ -34,13 +30,7 @@ class BoardController(
             val token = authorization.substringAfter("Bearer ")
 
             // get sub from decoded token
-            val sub = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.toByteArray(StandardCharsets.UTF_8))
-                .build()
-                .parseClaimsJws(token)
-                .body
-                .subject
-            val userSub = Json.decodeFromString<UserSub>(sub)
+            val userSub = Json.decodeFromString<UserSub>(jwtManager.decodeJWT(token))
 
             return boardService.createPost(requestBody, userSub)!!
         } catch (e: MalformedJwtException) {
@@ -77,14 +67,7 @@ class BoardController(
         try {
             val token = authorization.substringAfter("Bearer ")
 
-            // get sub from decoded token
-            val sub = Jwts.parserBuilder()
-                .setSigningKey(jwtSecret.toByteArray(StandardCharsets.UTF_8))
-                .build()
-                .parseClaimsJws(token)
-                .body
-                .subject
-            val userSub = Json.decodeFromString<UserSub>(sub)
+            val userSub = Json.decodeFromString<UserSub>(jwtManager.decodeJWT(token))
 
             return boardService.createComment(requestBody, boardId, userSub)
         } catch (e: MalformedJwtException) {

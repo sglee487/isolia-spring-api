@@ -5,6 +5,8 @@ import com.group.isolia_api.schemas.user.response.UserCreateResponse
 import com.group.isolia_api.schemas.user.response.UserLoginResponse
 import com.group.isolia_api.schemas.user.response.UserUpdateResponse
 import com.group.isolia_api.service.user.UserService
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
@@ -28,7 +30,9 @@ class UserController(
         return try {
             val user = userService.registerUser(request)
 
-            val jwt = jwtManager.generateJwtToken(user.getJwtSub())
+            val userSub = user.getUserSub()
+            val encodedUserSub = Json.encodeToString(userSub)
+            val jwt = jwtManager.generateJwtToken(encodedUserSub)
 
             ResponseEntity(UserCreateResponse(user, jwt), HttpStatus.CREATED)
         } catch (e: DataIntegrityViolationException) {
@@ -49,7 +53,9 @@ class UserController(
         return try {
             val user = userService.loginUser(request)
 
-            val jwt = jwtManager.generateJwtToken(user.getJwtSub())
+            val userSub = user.getUserSub()
+            val encodedUserSub = Json.encodeToString(userSub)
+            val jwt = jwtManager.generateJwtToken(encodedUserSub)
 
             ResponseEntity(UserLoginResponse(user, jwt), HttpStatus.OK)
         } catch (e: IllegalArgumentException) {

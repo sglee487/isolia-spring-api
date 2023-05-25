@@ -1,8 +1,6 @@
 package com.group.isolia_api.domain
 
 import jakarta.persistence.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 
@@ -32,7 +30,7 @@ class User(
     val id: Long? = null
 ) {
 
-    fun getJwtSub(): String = Json.encodeToString(UserSub(id!!, loginType, email))
+    fun getUserSub(): UserSub = UserSub(id!!, loginType, email)
 
     fun updateUser(
         displayName: String?,

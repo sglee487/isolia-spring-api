@@ -5,18 +5,22 @@ import com.group.isolia_api.schemas.user.response.UserCreateResponse
 import com.group.isolia_api.schemas.user.response.UserLoginResponse
 import com.group.isolia_api.schemas.user.response.UserUpdateResponse
 import com.group.isolia_api.service.user.UserService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
+
 @RestController
 class UserController(
     private val userService: UserService,
+    @Value("\${spring.env.jwt-secret-key}")
+    private val jwtSecret: String = "default"
 ) {
 
-    private val jwtManager: JWTManager = JWTManager()
+    private val jwtManager: JWTManager = JWTManager(jwtSecret)
 
     @ResponseBody
     @PostMapping("/user")

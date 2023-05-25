@@ -11,14 +11,17 @@ import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
 import io.jsonwebtoken.security.SignatureException
 import kotlinx.serialization.json.Json
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class BoardController(
-    val boardService: BoardService
+    val boardService: BoardService,
+    @Value("\${spring.env.jwt-secret-key}")
+    private val jwtSecret: String = "default"
 ) {
 
-    private val jwtManager: JWTManager = JWTManager()
+    private val jwtManager: JWTManager = JWTManager(jwtSecret)
 
     @ResponseBody
     @PostMapping("/board")

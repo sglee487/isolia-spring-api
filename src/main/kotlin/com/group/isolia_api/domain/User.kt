@@ -14,7 +14,7 @@ private val encoder = BCryptPasswordEncoder()
     )]
 )
 
-class User(
+data class User(
     val snsSub: String?,
     @Enumerated(EnumType.STRING)
     val loginType: LoginType = LoginType.EMAIL,

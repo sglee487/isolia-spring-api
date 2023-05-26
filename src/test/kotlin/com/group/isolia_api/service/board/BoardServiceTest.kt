@@ -2,6 +2,8 @@ package com.group.isolia_api.service.board
 
 import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.LoginType
+import com.group.isolia_api.domain.User
+import com.group.isolia_api.domain.UserSub
 import com.group.isolia_api.repository.board.BoardRepository
 import com.group.isolia_api.repository.comment.CommentRepository
 import com.group.isolia_api.repository.user.UserRepository
@@ -12,6 +14,7 @@ import com.group.isolia_api.schemas.user.request.UserCreateRequest
 import com.group.isolia_api.service.user.UserService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,18 +30,12 @@ class BoardServiceTest @Autowired constructor(
     private val userRepository: UserRepository,
     private val commentRepository: CommentRepository
 ) {
+    private lateinit var user: User
+    private lateinit var userSub: UserSub
 
-    @AfterEach
-    fun clear() {
-        boardRepository.deleteAll()
-        userRepository.deleteAll()
-    }
-
-    @Test
-    @DisplayName("게시글 저장이 정상 동작한다")
-    fun createPostTest() {
-        // given
-        val user = userService.registerUser(
+    @BeforeEach
+    fun setup() {
+        user = userService.registerUser(
             UserCreateRequest(
                 snsSub = null,
                 loginType = LoginType.EMAIL,
@@ -49,7 +46,18 @@ class BoardServiceTest @Autowired constructor(
                 picture96 = null,
             )
         )
-        val userSub = user.getUserSub()
+        userSub = user.getUserSub()
+    }
+
+    @AfterEach
+    fun clear() {
+        boardRepository.deleteAll()
+        userRepository.deleteAll()
+    }
+
+    @Test
+    @DisplayName("게시글 저장이 정상 동작한다")
+    fun createPostTest() {
 
         // when
         val boardPostCreateRequest = BoardPostCreateRequest(
@@ -61,54 +69,46 @@ class BoardServiceTest @Autowired constructor(
 
         // then
         val boardPost = boardRepository.findAll().first()
-        assert(boardPost.boardType == BoardType.NOTICE)
-        assert(boardPost.title == "이것은 제목")
-        assert(boardPost.content == "이것은 내용")
+        assertThat(boardPost.boardType).isEqualTo(BoardType.NOTICE)
+        assertThat(boardPost.title).isEqualTo("이것은 제목")
+        assertThat(boardPost.content).isEqualTo("이것은 내용")
+        assertThat(boardPost.user).isEqualTo(user)
     }
 
     @Test
     @DisplayName("게시판 (게시글들) 조회가 정상 동작한다")
     fun getBoardListTest() {
-        // given
-        val user = userService.registerUser(
-            UserCreateRequest(
-                snsSub = null,
-                loginType = LoginType.EMAIL,
-                email = "sglee487@naver.com",
-                password = "1234",
-                displayName = "익명1",
-                picture32 = null,
-                picture96 = null,
-            )
-        )
-        val userSub = user.getUserSub()
 
+        // when
         val noticeLength = 3
         val freeLength = 5
 
-        // when
         for (i in 0 until noticeLength) {
-            boardService.createPost(BoardPostCreateRequest(
-                boardType = BoardType.NOTICE,
-                title = "이것은 공지_${i}",
-                content = "이것은 공지 내용_${i}"
-            ), userSub)
+            boardService.createPost(
+                BoardPostCreateRequest(
+                    boardType = BoardType.NOTICE,
+                    title = "이것은 공지_${i}",
+                    content = "이것은 공지 내용_${i}"
+                ), userSub
+            )
         }
         for (i in 0 until freeLength) {
-            boardService.createPost(BoardPostCreateRequest(
-                boardType = BoardType.FREE,
-                title = "이것은 자유_${i}",
-                content = "이것은 자유 내용_${i}"
-            ), userSub)
+            boardService.createPost(
+                BoardPostCreateRequest(
+                    boardType = BoardType.FREE,
+                    title = "이것은 자유_${i}",
+                    content = "이것은 자유 내용_${i}"
+                ), userSub
+            )
         }
 
         // then
         val boardList = boardService.getBoardList()
-        assert(boardList.size == noticeLength + freeLength)
+        assertThat(boardList.size).isEqualTo(noticeLength + freeLength)
         val noticeList = boardService.getBoardList(BoardType.NOTICE)
-        assert(noticeList.size == noticeLength)
+        assertThat(noticeList.size).isEqualTo(noticeLength)
         val freeList = boardService.getBoardList(BoardType.FREE)
-        assert(freeList.size == freeLength)
+        assertThat(freeList.size).isEqualTo(freeLength)
 
         for (i in 0 until noticeLength) {
             assertThat(noticeList[i].title).isEqualTo("이것은 공지_${i}")
@@ -126,19 +126,6 @@ class BoardServiceTest @Autowired constructor(
     @Test
     @DisplayName("게시글 조회가 정상 동작한다")
     fun getPostTest() {
-        // given
-        val user = userService.registerUser(
-            UserCreateRequest(
-                snsSub = null,
-                loginType = LoginType.EMAIL,
-                email = "sglee487@naver.com",
-                password = "1234",
-                displayName = "익명1",
-                picture32 = null,
-                picture96 = null,
-            )
-        )
-        val userSub = user.getUserSub()
 
         // when
         val boardId = boardService.createPost(
@@ -163,19 +150,6 @@ class BoardServiceTest @Autowired constructor(
     @DisplayName("댓글 저장이 정상 동작한다")
     fun createCommentTest() {
         // given
-        val user = userService.registerUser(
-            UserCreateRequest(
-                snsSub = null,
-                loginType = LoginType.EMAIL,
-                email = "sglee487@naver.com",
-                password = "1234",
-                displayName = "익명1",
-                picture32 = null,
-                picture96 = null,
-            )
-        )
-        val userSub = user.getUserSub()
-
         val boardId = boardService.createPost(
             BoardPostCreateRequest(
                 boardType = BoardType.NOTICE,

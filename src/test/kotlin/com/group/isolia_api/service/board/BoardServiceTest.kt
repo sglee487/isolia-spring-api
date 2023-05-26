@@ -13,10 +13,7 @@ import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
 import com.group.isolia_api.schemas.user.request.UserCreateRequest
 import com.group.isolia_api.service.user.UserService
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -172,7 +169,7 @@ class BoardServiceTest @Autowired constructor(
         assertThat(board.comments.size).isEqualTo(3)
         for (i in 0 until 3) {
             assertThat(board.comments[i].content).isEqualTo("이것은 댓글 내용_${i}")
-            // assertThat(board.comments[i].userInfo).isEqualTo(BoardUserInfo.of(user))
+            assertThat(board.comments[i].userInfo).isEqualTo(BoardUserInfo.of(user))
         }
 
         val results = boardRepository.findAll()

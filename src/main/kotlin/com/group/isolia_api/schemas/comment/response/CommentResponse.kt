@@ -1,6 +1,7 @@
 package com.group.isolia_api.schemas.comment.response
 
 import com.group.isolia_api.domain.Comment
+import com.group.isolia_api.schemas.board.response.BoardUserInfo
 import java.sql.Date
 
 data class CommentGetResponse(
@@ -10,7 +11,7 @@ data class CommentGetResponse(
     val createdAt: Date,
     val updatedAt: Date,
     val deletedAt: Date?,
-    // TODO: user info
+    val userInfo: BoardUserInfo
 ) {
     companion object {
         fun of(comment: Comment): CommentGetResponse {
@@ -21,6 +22,7 @@ data class CommentGetResponse(
                 createdAt = comment.createdAt,
                 updatedAt = comment.updatedAt,
                 deletedAt = comment.deletedAt,
+                userInfo = BoardUserInfo.of(comment.user)
             )
         }
     }

@@ -11,7 +11,8 @@ data class BoardUserInfo(
     val email: String,
     val displayName: String,
     val picture32: String?,
-    val picture96: String?
+    val picture96: String?,
+    val active: Boolean
 ) {
     companion object {
         fun of(user: User): BoardUserInfo {
@@ -21,6 +22,7 @@ data class BoardUserInfo(
                 displayName = user.displayName,
                 picture32 = user.picture32,
                 picture96 = user.picture96,
+                active = user.active
             )
         }
     }

@@ -41,7 +41,7 @@ data class BoardGetResponse(
     val updatedAt: Date,
     val deletedAt: Date?,
     val boardUserInfo: BoardUserInfo,
-    val comments: List<CommentGetResponse>
+    val commentsSize: Int
 ) {
     companion object {
         fun of(board: Board, user: User): BoardGetResponse {
@@ -58,7 +58,7 @@ data class BoardGetResponse(
                 updatedAt = board.updatedAt,
                 deletedAt = board.deletedAt,
                 boardUserInfo = BoardUserInfo.of(user),
-                comments = board.comments.map { CommentGetResponse.of(it) }
+                commentsSize = board.comments.size
             )
         }
     }

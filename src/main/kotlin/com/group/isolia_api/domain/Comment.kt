@@ -1,7 +1,7 @@
 package com.group.isolia_api.domain
 
-import jakarta.persistence.*
 import java.sql.Date
+import javax.persistence.*
 
 @Entity
 class Comment(

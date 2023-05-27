@@ -1,7 +1,7 @@
 package com.group.isolia_api.domain
 
-import jakarta.persistence.*
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import javax.persistence.*
 
 
 private val encoder = BCryptPasswordEncoder()

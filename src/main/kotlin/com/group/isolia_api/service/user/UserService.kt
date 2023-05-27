@@ -1,6 +1,7 @@
 package com.group.isolia_api.service.user
 
 import com.group.isolia_api.domain.User
+import com.group.isolia_api.repository.user.UserQuerydslRepository
 import com.group.isolia_api.repository.user.UserRepository
 import com.group.isolia_api.schemas.user.request.UserCreateRequest
 import com.group.isolia_api.schemas.user.request.UserLoginRequest
@@ -11,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val userQuerydslRepository: UserQuerydslRepository,
 ) {
     private val encoder = BCryptPasswordEncoder()
 
@@ -33,7 +35,7 @@ class UserService(
 
     @Transactional
     fun updateUser(request: UserUpdateRequest): User {
-        val user = userRepository.findByLoginTypeAndEmail(request.loginType, request.email)
+        val user = userQuerydslRepository.findByLoginTypeAndEmail(request.loginType, request.email)
             ?: throw IllegalArgumentException("해당 유저가 존재하지 않습니다.")
         user.updateUser(
             displayName = request.displayName,
@@ -48,7 +50,7 @@ class UserService(
 
     @Transactional
     fun loginUser(request: UserLoginRequest): User {
-        val user = userRepository.findByLoginTypeAndEmail(request.loginType, request.email)
+        val user = userQuerydslRepository.findByLoginTypeAndEmail(request.loginType, request.email)
             ?: throw IllegalArgumentException("해당 유저가 존재하지 않습니다.")
         if (!encoder.matches(request.password, user.password)) {
             throw IllegalArgumentException("비밀번호가 틀렸습니다.")

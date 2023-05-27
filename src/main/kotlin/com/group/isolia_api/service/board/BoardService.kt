@@ -4,6 +4,7 @@ import com.group.isolia_api.domain.Board
 import com.group.isolia_api.domain.BoardType
 import com.group.isolia_api.domain.Comment
 import com.group.isolia_api.domain.UserSub
+import com.group.isolia_api.repository.board.BoardQuerydslRepository
 import com.group.isolia_api.repository.board.BoardRepository
 import com.group.isolia_api.repository.comment.CommentRepository
 import com.group.isolia_api.repository.user.UserRepository
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class BoardService(
     private val boardRepository: BoardRepository,
+    private val boardQuerydslRepository: BoardQuerydslRepository,
     private val userRepository: UserRepository,
     private val commentRepository: CommentRepository
 ) {
@@ -50,13 +52,10 @@ class BoardService(
     }
 
     @Transactional
-    fun getBoardList(boardType: BoardType? = null): List<BoardGetResponse> = boardType?.let {
-        boardRepository.findAllByBoardTypeEqualsAndActiveIsTrue(it).map { board ->
+    fun getBoardList(boardType: BoardType? = null): List<BoardGetResponse> =
+        boardQuerydslRepository.getBoardList(boardType).map { board ->
             BoardGetResponse.of(board, board.user)
         }
-    } ?: boardRepository.findAllByActiveIsTrue().map { board ->
-        BoardGetResponse.of(board, board.user)
-    }
 
     @Transactional
     fun getBoard(id: Long): BoardPostResponse? = boardRepository.getByIdAndActiveIsTrue(id)?.let { board ->

@@ -8,7 +8,6 @@ import com.group.isolia_api.service.user.UserService
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -16,6 +15,7 @@ import java.util.*
 
 
 @RestController
+@CrossOrigin(origins = ["*"])
 class UserController(
     private val userService: UserService,
     @Value("\${spring.env.jwt-secret-key}")
@@ -35,7 +35,7 @@ class UserController(
             val jwt = jwtManager.generateJwtToken(encodedUserSub)
 
             ResponseEntity(UserCreateResponse(user, jwt), HttpStatus.CREATED)
-        } catch (e: DataIntegrityViolationException) {
+        } catch (e: Error) {
             ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
     }

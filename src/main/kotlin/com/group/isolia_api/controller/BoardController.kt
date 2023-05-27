@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 
 @RestController
+@CrossOrigin(origins = ["*"])
 class BoardController(
     val boardService: BoardService,
     @Value("\${spring.env.jwt-secret-key}")

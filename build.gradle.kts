@@ -18,7 +18,7 @@ plugins {
     idea
 }
 
-group = "me.leedo"
+group = "com.group"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 

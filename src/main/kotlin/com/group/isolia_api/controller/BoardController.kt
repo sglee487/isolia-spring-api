@@ -97,7 +97,11 @@ class BoardController(
 
     @GetMapping("/board")
     fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<BoardGetResponse> {
-        return boardService.getBoardList(boardType)
+        return if (boardType == BoardType.ALL) {
+            boardService.getBoardList()
+        } else {
+            boardService.getBoardList(boardType)
+        }
     }
 
     @GetMapping("/post/", "/post/{id}")

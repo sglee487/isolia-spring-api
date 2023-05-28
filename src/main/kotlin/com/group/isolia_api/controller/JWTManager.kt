@@ -11,13 +11,13 @@ import java.util.*
 
 class JWTManager(private val jwtSecret: String) {
 
-    fun generateJwtToken(jwtSub: String): String {
+    fun generateJwtToken(jwtSub: String, minutes: Long? = null): String {
         print(jwtSecret)
         val key = Keys.hmacShaKeyFor(jwtSecret.toByteArray(StandardCharsets.UTF_8))
         return Jwts.builder()
             .setSubject(jwtSub)
             .setIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toInstant()))
-            .setExpiration(Date.from(LocalDateTime.now().plusHours(2).atZone(ZoneId.of("Asia/Seoul")).toInstant()))
+            .setExpiration(Date.from(LocalDateTime.now().plusMinutes(minutes ?: (60 * 2)).atZone(ZoneId.of("Asia/Seoul")).toInstant()))
             .signWith(key, SignatureAlgorithm.HS256)
             .compact()
     }

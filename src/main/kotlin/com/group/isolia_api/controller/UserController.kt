@@ -32,9 +32,10 @@ class UserController(
 
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
-            val jwt = jwtManager.generateJwtToken(encodedUserSub)
+            val exp: Long = 60 * 8
+            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes=exp)
 
-            ResponseEntity(UserCreateResponse(user, jwt), HttpStatus.CREATED)
+            ResponseEntity(UserCreateResponse(user, jwt, _exp=exp), HttpStatus.CREATED)
         } catch (e: Error) {
             ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
@@ -55,9 +56,10 @@ class UserController(
 
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
-            val jwt = jwtManager.generateJwtToken(encodedUserSub)
+            val exp: Long = 60 * 8
+            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes=exp)
 
-            ResponseEntity(UserLoginResponse(user, jwt), HttpStatus.OK)
+            ResponseEntity(UserLoginResponse(user, jwt, _exp=exp), HttpStatus.OK)
         } catch (e: IllegalArgumentException) {
             ResponseEntity(e.message, HttpStatus.UNAUTHORIZED)
         }

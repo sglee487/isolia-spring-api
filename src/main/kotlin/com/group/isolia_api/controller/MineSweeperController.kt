@@ -1,17 +1,50 @@
 package com.group.isolia_api.controller
 
 import com.group.isolia_api.repository.minesweeper.MineSweeperRepository
-import org.springframework.messaging.MessageHeaders
+import com.group.isolia_api.repository.minesweeper.MineSweeperRepositoryResponse
+import kotlinx.serialization.*
+import kotlinx.serialization.json.Json
+import org.springframework.context.event.EventListener
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
-import org.springframework.messaging.simp.SimpMessageType
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.socket.messaging.SessionConnectedEvent
+import org.springframework.web.socket.messaging.SessionDisconnectEvent
+import java.io.File
 import java.security.Principal
+import java.util.*
+
+
+@Serializable
+data class MineSweeperPlayer(
+    val sid: String,
+    val name: String,
+    val color: String,
+)
+
+@Serializable
+enum class ActionType(
+    val value: String,
+) {
+    @SerialName("reveal")
+    REVEAL("reveal"),
+
+    @SerialName("flag")
+    FLAG("flag");
+}
+
+@Serializable
+data class MineAction(
+    val sid: String,
+    val actionType: ActionType,
+    val x: Int,
+    val y: Int,
+)
 
 @RestController
 @CrossOrigin(origins = ["*"])
@@ -19,43 +52,76 @@ class MineSweeperController(
     val mineSweeperRepository: MineSweeperRepository,
     val simpleMessagingTemplate: SimpMessagingTemplate,
 ) {
+    val players = mutableMapOf<String, MineSweeperPlayer>()
+    val randomNames = File("src/main/resources/random_names.txt").readLines()
 
     @GetMapping("/reset")
     fun reset() {
         mineSweeperRepository.reset()
     }
 
-    @MessageMapping("/hello")
-    fun greeting(message: String){
-        simpleMessagingTemplate.convertAndSend("/subscribe/mine", message)
+    @EventListener
+    fun onSessionConnected(event: SessionConnectedEvent) {
+        val principal = event.user ?: return
+        players[principal.name] = MineSweeperPlayer(
+            sid = principal.name,
+            name = generateNickname(),
+            color = generateColor(),
+        )
+    }
+
+    @EventListener
+    fun onSessionDisconnect(event: SessionDisconnectEvent) {
+        val principal = event.user ?: return
+        players.remove(principal.name)
+        simpleMessagingTemplate.convertAndSend("/subscribe-mine/players", Json.encodeToString(players.values))
     }
 
     @MessageMapping("/join")
-    fun generateNickname(@Header("simpSessionId") sessionId: String) {
-        println(sessionId)
-        simpleMessagingTemplate.convertAndSendToUser(sessionId, "/subscribe/mine", "jourge")
+    fun join(
+        principal: Principal,
+    ) {
+        val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
+        println(gameStatus)
+
+        simpleMessagingTemplate.convertAndSend("/subscribe-mine/players", Json.encodeToString(players.values))
+        simpleMessagingTemplate.convertAndSend(
+            "/subscribe-mine/user/${principal.name}/start",
+            Json.encodeToString(gameStatus)
+        )
     }
 
-//    @MessageMapping("/message")
-//    @SendToUser("/queue/reply")
-//    fun handleMessage(
-//        @Payload message: String,
-//        accessor: SimpMessageHeaderAccessor
-//    ): String {
-//        val sessionId = accessor.sessionId
-//        // Process the message and prepare the response
-//        val response = "Hello, $sessionId! You sent: $message"
-//        println(response)
-//        return response
-//    }
+    @MessageMapping("/start")
+    fun start(
+        principal: Principal
+    ) {
+        val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
+        println(gameStatus)
 
-    private fun createHeaders(sessionId: String?): MessageHeaders {
-        val headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE)
-        sessionId?.let {
-            headerAccessor.sessionId = sessionId
-        }
-        headerAccessor.setLeaveMutable(true)
-        return headerAccessor.messageHeaders
+        simpleMessagingTemplate.convertAndSend(
+            "/subscribe-mine/user/${principal.name}/start",
+            Json.encodeToString(gameStatus)
+        )
+    }
+
+    @MessageMapping("/action")
+    fun action(
+        principal: Principal,
+        @Payload message: String,
+    ) {
+        val mineAction = Json.decodeFromString<MineAction>(message)
+        val name = players[mineAction.sid]?.name ?: return
+        val color = players[mineAction.sid]?.color ?: return
+        mineSweeperRepository.addHistory(mineAction.actionType, name, color, mineAction.x, mineAction.y)
+
+        println(mineSweeperRepository.getHistory())
+//        val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
+//        println(gameStatus)
+//
+//        simpleMessagingTemplate.convertAndSend(
+//            "/subscribe-mine/user/${principal.name}/start",
+//            Json.encodeToString(gameStatus)
+//        )
     }
 
     @MessageMapping("/message")
@@ -65,43 +131,14 @@ class MineSweeperController(
         @Payload message: String,
         @Header("simpSessionId") sessionId: String
     ) {
-        println(principal)
-        println(principal.name)
-        println(message)
-        println(createHeaders(principal.name))
-        println(accessor.sessionId)
-        println(accessor.messageHeaders)
-        println(accessor.id)
-        println(sessionId)
-
-        simpleMessagingTemplate.convertAndSend("/subscribe/queue/reply", "dsfdsfdsf")
-        simpleMessagingTemplate.convertAndSend("/subscribe/${sessionId}/queue/reply", "dsfdsfdsf")
-        simpleMessagingTemplate.convertAndSend("/subscribe/user/${sessionId}/queue/reply", "dsfdsfdsf")
-
-        simpleMessagingTemplate.convertAndSend("/subscribe/${principal.name}/queue/reply", "dsfdsfdsf")
         simpleMessagingTemplate.convertAndSend("/subscribe/user/${principal.name}/queue/reply", "dsfdsfdsf")
-
-        simpleMessagingTemplate.convertAndSendToUser(principal.name, "/queue/reply", "dsfdsfdsf")
-
-
-////        simpleMessagingTemplate.convertAndSendToUser()
-//        simpleMessagingTemplate.convertAndSendToUser(principal.name, "/queue/reply", "dsfdsfdsf")
-//        simpleMessagingTemplate.convertAndSendToUser(principal.name, "/queue/reply", "dsfdsfdsf", createHeaders(principal.name))
-//        simpleMessagingTemplate.convertAndSendToUser(accessor.sessionId!!, "/queue/reply", "dsfdsfdsf")
-//        simpleMessagingTemplate.convertAndSendToUser(accessor.sessionId!!, "/queue/reply", "dsfdsfdsf", createHeaders(accessor.sessionId!!))
-//
-//        simpleMessagingTemplate.convertAndSendToUser(principal.name, "/reply", "dsfdsfdsf")
-//        simpleMessagingTemplate.convertAndSendToUser(principal.name, "/reply", "dsfdsfdsf", createHeaders(principal.name))
-//        simpleMessagingTemplate.convertAndSendToUser(accessor.sessionId!!, "/reply", "dsfdsfdsf")
-//        simpleMessagingTemplate.convertAndSendToUser(accessor.sessionId!!, "/reply", "dsfdsfdsf", createHeaders(accessor.sessionId!!))
-
-
-
-        //        val sessionId = accessor.sessionId!!
-//        // Process the message and prepare the response
-//        val response = "Hello, $sessionId! You sent: $message"
-//        println(response)
-//        simpleMessagingTemplate.convertAndSendToUser(sessionId, "/queue/reply", response, accessor.messageHeaders)
     }
 
+    private fun generateNickname(): String {
+        return randomNames[(Math.random() * randomNames.size).toInt()]
+    }
+
+    private fun generateColor(): String {
+        return "#${(0..5).joinToString("") { Integer.toHexString((Math.random() * 16).toInt()) }}"
+    }
 }

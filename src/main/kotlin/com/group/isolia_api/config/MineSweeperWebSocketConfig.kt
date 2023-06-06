@@ -18,13 +18,12 @@ import java.util.*
 class MineSweeperWebSocketConfig : WebSocketMessageBrokerConfigurer {
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {
-        registry.enableSimpleBroker("/subscribe")
-        registry.setApplicationDestinationPrefixes("/publish")
-        registry.setUserDestinationPrefix("/user") // 없어도 기본값으로 들어있다.
+        registry.enableSimpleBroker("/subscribe-mine")
+        registry.setApplicationDestinationPrefixes("/publish-mine")
     }
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
-        registry.addEndpoint("/ws-connect").setAllowedOriginPatterns("*").setHandshakeHandler(CustomHandshakeHandler).withSockJS()
+        registry.addEndpoint("/ws-mine-connect").setAllowedOriginPatterns("*").setHandshakeHandler(CustomHandshakeHandler).withSockJS()
     }
 }
 

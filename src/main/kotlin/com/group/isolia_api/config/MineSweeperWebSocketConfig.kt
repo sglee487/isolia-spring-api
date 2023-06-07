@@ -23,21 +23,20 @@ class MineSweeperWebSocketConfig : WebSocketMessageBrokerConfigurer {
     }
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
-        registry.addEndpoint("/ws-mine-connect").setAllowedOriginPatterns("*").setHandshakeHandler(CustomHandshakeHandler).withSockJS()
+        registry.addEndpoint("/ws-mine-connect").setAllowedOriginPatterns("*")
+            .setHandshakeHandler(CustomHandshakeHandler).withSockJS()
     }
 }
 
-class StompPrincipal(private val name: String): Principal {
+class StompPrincipal(private val name: String) : Principal {
     override fun getName(): String {
         return name
     }
 }
 
-object CustomHandshakeHandler: DefaultHandshakeHandler() {
+object CustomHandshakeHandler : DefaultHandshakeHandler() {
     override fun determineUser(
-        request: ServerHttpRequest,
-        wsHandler: WebSocketHandler,
-        attributes: MutableMap<String, Any>
+        request: ServerHttpRequest, wsHandler: WebSocketHandler, attributes: MutableMap<String, Any>
     ): Principal {
         return StompPrincipal(UUID.randomUUID().toString())
     }

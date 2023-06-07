@@ -1,5 +1,6 @@
 package com.group.isolia_api.controller
 
+import com.group.isolia_api.repository.minesweeper.ActionHistory
 import com.group.isolia_api.repository.minesweeper.MineSweeperRepository
 import com.group.isolia_api.repository.minesweeper.MineSweeperRepositoryResponse
 import kotlinx.serialization.*
@@ -11,7 +12,6 @@ import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.web.bind.annotation.CrossOrigin
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.socket.messaging.SessionConnectedEvent
 import org.springframework.web.socket.messaging.SessionDisconnectEvent
@@ -46,6 +46,15 @@ data class MineAction(
     val y: Int,
 )
 
+@Serializable
+class ActionResponse(
+    val action: ActionType,
+    val x: Int,
+    val y: Int,
+    val color: String,
+    val history: List<ActionHistory>,
+)
+
 @RestController
 @CrossOrigin(origins = ["*"])
 class MineSweeperController(
@@ -54,11 +63,6 @@ class MineSweeperController(
 ) {
     val players = mutableMapOf<String, MineSweeperPlayer>()
     val randomNames = File("src/main/resources/random_names.txt").readLines()
-
-    @GetMapping("/reset")
-    fun reset() {
-        mineSweeperRepository.reset()
-    }
 
     @EventListener
     fun onSessionConnected(event: SessionConnectedEvent) {
@@ -91,6 +95,19 @@ class MineSweeperController(
         )
     }
 
+    @MessageMapping("/restart")
+    fun reset() {
+        mineSweeperRepository.reset()
+        simpleMessagingTemplate.convertAndSend(
+            "/subscribe-mine/restart", Json.encodeToString(
+                MineSweeperRepositoryResponse(
+                    mineSweeperRepository.getMineField(),
+                    mineSweeperRepository.getHistory(),
+                )
+            )
+        )
+    }
+
     @MessageMapping("/start")
     fun start(
         principal: Principal
@@ -115,6 +132,18 @@ class MineSweeperController(
         mineSweeperRepository.addHistory(mineAction.actionType, name, color, mineAction.x, mineAction.y)
 
         println(mineSweeperRepository.getHistory())
+        simpleMessagingTemplate.convertAndSend(
+            "/subscribe-mine/action", Json.encodeToString(
+                ActionResponse(
+                    action = mineAction.actionType,
+                    x = mineAction.x,
+                    y = mineAction.y,
+                    color = color,
+                    history = mineSweeperRepository.getHistory(),
+                )
+            )
+        )
+
 //        val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
 //        println(gameStatus)
 //

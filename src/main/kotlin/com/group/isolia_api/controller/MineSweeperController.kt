@@ -86,7 +86,6 @@ class MineSweeperController(
         principal: Principal,
     ) {
         val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
-        println(gameStatus)
 
         simpleMessagingTemplate.convertAndSend("/subscribe-mine/players", Json.encodeToString(players.values))
         simpleMessagingTemplate.convertAndSend(
@@ -100,10 +99,7 @@ class MineSweeperController(
         mineSweeperRepository.reset()
         simpleMessagingTemplate.convertAndSend(
             "/subscribe-mine/restart", Json.encodeToString(
-                MineSweeperRepositoryResponse(
-                    mineSweeperRepository.getMineField(),
-                    mineSweeperRepository.getHistory(),
-                )
+                mineSweeperRepository.getGameStatus()
             )
         )
     }
@@ -113,7 +109,6 @@ class MineSweeperController(
         principal: Principal
     ) {
         val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
-        println(gameStatus)
 
         simpleMessagingTemplate.convertAndSend(
             "/subscribe-mine/user/${principal.name}/start",
@@ -131,7 +126,6 @@ class MineSweeperController(
         val color = players[mineAction.sid]?.color ?: return
         mineSweeperRepository.addHistory(mineAction.actionType, name, color, mineAction.x, mineAction.y)
 
-        println(mineSweeperRepository.getHistory())
         simpleMessagingTemplate.convertAndSend(
             "/subscribe-mine/action", Json.encodeToString(
                 ActionResponse(
@@ -143,14 +137,6 @@ class MineSweeperController(
                 )
             )
         )
-
-//        val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
-//        println(gameStatus)
-//
-//        simpleMessagingTemplate.convertAndSend(
-//            "/subscribe-mine/user/${principal.name}/start",
-//            Json.encodeToString(gameStatus)
-//        )
     }
 
     @MessageMapping("/message")

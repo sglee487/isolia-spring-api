@@ -1,15 +1,15 @@
 package com.group.isolia_api.controller
 
-import com.group.isolia_api.repository.minesweeper.ActionHistory
+import com.group.isolia_api.domain.MineSweeper.MineAction
+import com.group.isolia_api.domain.MineSweeper.MineSweeperPlayer
 import com.group.isolia_api.repository.minesweeper.MineSweeperRepository
-import com.group.isolia_api.repository.minesweeper.MineSweeperRepositoryResponse
+import com.group.isolia_api.schemas.MineSweeper.response.ActionResponse
+import com.group.isolia_api.schemas.MineSweeper.response.MineSweeperRepositoryResponse
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import org.springframework.context.event.EventListener
-import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.RestController
@@ -19,42 +19,6 @@ import java.io.File
 import java.security.Principal
 import java.util.*
 
-
-@Serializable
-data class MineSweeperPlayer(
-    val sid: String,
-    val name: String,
-    val color: String,
-)
-
-@Serializable
-enum class ActionType(
-    val value: String,
-) {
-    @SerialName("reveal")
-    REVEAL("reveal"),
-
-    @SerialName("flag")
-    FLAG("flag");
-}
-
-@Serializable
-data class MineAction(
-    val sid: String,
-    val actionType: ActionType,
-    val x: Int,
-    val y: Int,
-)
-
-@Serializable
-class ActionResponse(
-    val action: ActionType,
-    val x: Int,
-    val y: Int,
-    val color: String,
-    val history: List<ActionHistory>,
-)
-
 @RestController
 @CrossOrigin(origins = ["*"])
 class MineSweeperController(
@@ -63,6 +27,17 @@ class MineSweeperController(
 ) {
     val players = mutableMapOf<String, MineSweeperPlayer>()
     val randomNames = File("src/main/resources/random_names.txt").readLines()
+
+    private fun generateNickname(): String {
+        return randomNames[(Math.random() * randomNames.size).toInt()]
+    }
+
+    private fun generateColor(): String {
+        return "#${(0..5).joinToString("") { Integer.toHexString((Math.random() * 16).toInt()) }}"
+    }
+
+    fun ActionResponse.encodeToString() = Json.encodeToString(this)
+    fun MineSweeperRepositoryResponse.encodeToString() = Json.encodeToString(this)
 
     @EventListener
     fun onSessionConnected(event: SessionConnectedEvent) {
@@ -85,12 +60,9 @@ class MineSweeperController(
     fun join(
         principal: Principal,
     ) {
-        val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
-
         simpleMessagingTemplate.convertAndSend("/subscribe-mine/players", Json.encodeToString(players.values))
         simpleMessagingTemplate.convertAndSend(
-            "/subscribe-mine/user/${principal.name}/start",
-            Json.encodeToString(gameStatus)
+            "/subscribe-mine/user/${principal.name}/start", mineSweeperRepository.getGameStatus().encodeToString()
         )
     }
 
@@ -98,9 +70,7 @@ class MineSweeperController(
     fun reset() {
         mineSweeperRepository.reset()
         simpleMessagingTemplate.convertAndSend(
-            "/subscribe-mine/restart", Json.encodeToString(
-                mineSweeperRepository.getGameStatus()
-            )
+            "/subscribe-mine/restart", mineSweeperRepository.getGameStatus().encodeToString()
         )
     }
 
@@ -111,49 +81,29 @@ class MineSweeperController(
         val gameStatus: MineSweeperRepositoryResponse = mineSweeperRepository.getGameStatus()
 
         simpleMessagingTemplate.convertAndSend(
-            "/subscribe-mine/user/${principal.name}/start",
-            Json.encodeToString(gameStatus)
+            "/subscribe-mine/user/${principal.name}/start", Json.encodeToString(gameStatus)
         )
     }
 
     @MessageMapping("/action")
     fun action(
         principal: Principal,
-        @Payload message: String,
+        @Payload mineAction: MineAction,
     ) {
-        val mineAction = Json.decodeFromString<MineAction>(message)
+        println(mineAction)
         val name = players[mineAction.sid]?.name ?: return
         val color = players[mineAction.sid]?.color ?: return
         mineSweeperRepository.addHistory(mineAction.actionType, name, color, mineAction.x, mineAction.y)
 
         simpleMessagingTemplate.convertAndSend(
-            "/subscribe-mine/action", Json.encodeToString(
-                ActionResponse(
-                    action = mineAction.actionType,
-                    x = mineAction.x,
-                    y = mineAction.y,
-                    color = color,
-                    history = mineSweeperRepository.getHistory(),
-                )
-            )
+            "/subscribe-mine/action",
+            ActionResponse(
+                action = mineAction.actionType,
+                x = mineAction.x,
+                y = mineAction.y,
+                color = color,
+                history = mineSweeperRepository.getHistory(),
+            ).encodeToString()
         )
-    }
-
-    @MessageMapping("/message")
-    fun handleMessage(
-        principal: Principal,
-        accessor: SimpMessageHeaderAccessor,
-        @Payload message: String,
-        @Header("simpSessionId") sessionId: String
-    ) {
-        simpleMessagingTemplate.convertAndSend("/subscribe/user/${principal.name}/queue/reply", "dsfdsfdsf")
-    }
-
-    private fun generateNickname(): String {
-        return randomNames[(Math.random() * randomNames.size).toInt()]
-    }
-
-    private fun generateColor(): String {
-        return "#${(0..5).joinToString("") { Integer.toHexString((Math.random() * 16).toInt()) }}"
     }
 }

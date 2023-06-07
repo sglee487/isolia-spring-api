@@ -1,6 +1,6 @@
 package com.group.isolia_api.repository.minesweeper
 
-import com.group.isolia_api.controller.ActionType
+import com.group.isolia_api.domain.MineSweeper.ActionType
 import kotlinx.serialization.Serializable
 
 @Serializable

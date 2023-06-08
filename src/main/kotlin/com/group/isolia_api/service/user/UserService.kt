@@ -57,4 +57,11 @@ class UserService(
         }
         return user
     }
+
+    @Transactional
+    fun isRegisteredUser(request: UserLoginRequest): Boolean {
+        userQuerydslRepository.findByLoginTypeAndEmail(request.loginType, request.email)
+            ?: return false
+        return true
+    }
 }

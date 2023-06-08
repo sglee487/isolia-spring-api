@@ -1,5 +1,6 @@
 package com.group.isolia_api.controller
 
+import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.schemas.user.request.*
 import com.group.isolia_api.schemas.user.response.UserCreateResponse
 import com.group.isolia_api.schemas.user.response.UserLoginResponse
@@ -18,8 +19,7 @@ import java.util.*
 @CrossOrigin(origins = ["*"])
 class UserController(
     private val userService: UserService,
-    @Value("\${spring.env.jwt-secret-key}")
-    private val jwtSecret: String = "default"
+    @Value("\${spring.env.jwt-secret-key}") private val jwtSecret: String = "default"
 ) {
 
     private val jwtManager: JWTManager = JWTManager(jwtSecret)
@@ -33,9 +33,9 @@ class UserController(
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
             val exp: Long = 60 * 8
-            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes=exp)
+            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
 
-            ResponseEntity(UserCreateResponse(user, jwt, _exp=exp), HttpStatus.CREATED)
+            ResponseEntity(UserCreateResponse(user, jwt, _exp = exp), HttpStatus.CREATED)
         } catch (e: Error) {
             ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
@@ -52,14 +52,50 @@ class UserController(
     @PostMapping("/user-login")
     fun loginUser(@RequestBody request: UserLoginRequest): ResponseEntity<*> {
         return try {
-            val user = userService.loginUser(request)
+            when(request.loginType) {
+                LoginType.EMAIL -> {
+                    val user = userService.loginUser(request)
 
-            val userSub = user.getUserSub()
-            val encodedUserSub = Json.encodeToString(userSub)
-            val exp: Long = 60 * 8
-            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes=exp)
+                    val userSub = user.getUserSub()
+                    val encodedUserSub = Json.encodeToString(userSub)
+                    val exp: Long = 60 * 8
+                    val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+                    ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
+                }
+                LoginType.GOOGLE -> {
+                    println(request)
+                    if (userService.isRegisteredUser(request)) {
+                        val user = userService.loginUser(request)
+                        val userSub = user.getUserSub()
+                        val encodedUserSub = Json.encodeToString(userSub)
+                        val exp: Long = 60 * 8
+                        val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+                        ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
+                    } else {
+                        val user = userService.registerUser(
+                            UserCreateRequest(
+                                snsSub = request.snsToken,
+                                loginType = request.loginType,
+                                email = request.email!!,
+                                password = "",
+                                displayName = request.email,
+                                picture32 = "",
+                                picture96 = ""
+                            )
+                        )
+                        println(request)
+                        val userSub = user.getUserSub()
+                        val encodedUserSub = Json.encodeToString(userSub)
+                        val exp: Long = 60 * 8
+                        val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
 
-            ResponseEntity(UserLoginResponse(user, jwt, _exp=exp), HttpStatus.OK)
+                        ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
+                    }
+
+                }
+                else -> throw IllegalArgumentException("로그인 타입이 잘못되었습니다.")
+            }
+
         } catch (e: IllegalArgumentException) {
             ResponseEntity(e.message, HttpStatus.UNAUTHORIZED)
         }

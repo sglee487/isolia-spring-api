@@ -6,6 +6,7 @@ import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.schemas.board.response.BoardPostResponse
 import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
+import com.group.isolia_api.service.S3Service
 import com.group.isolia_api.service.board.BoardService
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.MalformedJwtException
@@ -14,13 +15,16 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+
 
 @RestController
 @CrossOrigin(origins = ["*"])
 class BoardController(
     val boardService: BoardService,
+    val s3Service: S3Service,
     @Value("\${spring.env.jwt-secret-key}")
-    private val jwtSecret: String = "default"
+    private val jwtSecret: String,
 ) {
 
     private val jwtManager: JWTManager = JWTManager(jwtSecret)
@@ -107,6 +111,20 @@ class BoardController(
     @GetMapping("/post/", "/post/{id}")
     fun getPost(@PathVariable("id") id: Long?): BoardPostResponse? = id?.let {
         boardService.getBoard(it)
+    }
+
+    @PostMapping("/post/images")
+    fun uploadImageFiles(
+        @RequestHeader("Authorization") authorization: String,
+        imageFiles: List<MultipartFile>
+    ): List<String> {
+        val token = authorization.substringAfter("Bearer ")
+        val userSub = Json.decodeFromString<UserSub>(jwtManager.decodeJWT(token))
+        val imageUrls = mutableListOf<String>()
+        for (imageFile in imageFiles) {
+            imageUrls.add(s3Service.generateImageUrl(imageFile, "board/${userSub.id}"))
+        }
+        return imageUrls
     }
 
 

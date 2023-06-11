@@ -27,7 +27,3 @@ class UserLoginRequest(
     val email: String,
     val password: String,
 )
-
-class UserSNSLoginRequest(
-    val snsToken: String
-)

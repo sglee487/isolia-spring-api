@@ -12,7 +12,6 @@ import java.util.*
 class JWTManager(private val jwtSecret: String) {
 
     fun generateJwtToken(jwtSub: String, minutes: Long? = null): String {
-        print(jwtSecret)
         val key = Keys.hmacShaKeyFor(jwtSecret.toByteArray(StandardCharsets.UTF_8))
         return Jwts.builder()
             .setSubject(jwtSub)

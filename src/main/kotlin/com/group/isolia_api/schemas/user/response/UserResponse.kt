@@ -2,6 +2,8 @@ package com.group.isolia_api.schemas.user.response
 
 import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.domain.User
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class UserCreateResponse(
     private val user: User,
@@ -54,5 +56,20 @@ class UserLoginResponse(
 
     override fun toString(): String {
         return "UserLoginResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
+    }
+
+    fun encodedToJSON(): String {
+        return Json.encodeToString(
+            mapOf<String, String>(
+                "id" to id.toString(),
+                "loginType" to loginType.value,
+                "email" to email,
+                "displayName" to displayName,
+                "picture32" to (picture32 ?: ""),
+                "picture96" to (picture96 ?: ""),
+                "jwt" to jwt,
+                "exp" to exp.toString()
+            )
+        )
     }
 }

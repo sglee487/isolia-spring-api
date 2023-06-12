@@ -135,13 +135,13 @@ class UserController(
         val userSub = user.getUserSub()
         val encodedUserSub = Json.encodeToString(userSub)
         val exp: Long = 60 * 8
-        val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
-//        ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
+        val token = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+
         val modelAndView = ModelAndView()
         modelAndView.viewName = "redirect:http://localhost:5173/auth/callback/"
-        modelAndView.addObject("jwt", jwt)
-        modelAndView.addObject("user", user)
+        modelAndView.addObject("token", token) // ?token=~~~~~~
+        modelAndView.addObject("user", encodedUserSub) // &user=~~~~~~
+        modelAndView.addObject("userLoginResponse", UserLoginResponse(user, token, _exp = exp).encodedToJSON())
         return modelAndView
     }
-
 }

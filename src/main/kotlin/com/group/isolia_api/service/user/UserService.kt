@@ -60,12 +60,12 @@ class UserService(
 
     @Transactional
     fun loginUser(request: UserLoginRequest): User {
-            val user = userQuerydslRepository.findByLoginTypeAndEmail(request.loginType, request.email)
-                ?: throw IllegalArgumentException("해당 유저가 존재하지 않습니다.")
-            if (!encoder.matches(request.password, user.password)) {
-                throw IllegalArgumentException("비밀번호가 틀렸습니다.")
-            }
-            return user
+        val user = userQuerydslRepository.findByLoginTypeAndEmail(request.loginType, request.email)
+            ?: throw IllegalArgumentException("해당 유저가 존재하지 않습니다.")
+        if (!encoder.matches(request.password, user.password)) {
+            throw IllegalArgumentException("비밀번호가 틀렸습니다.")
+        }
+        return user
 
     }
 
@@ -109,29 +109,31 @@ class UserService(
     }
 
     @Transactional
-    fun socialLogin(authorizationCode: String, registrationId: String):User {
+    fun socialLogin(authorizationCode: String, registrationId: String): User {
         val accessToken = getAccessToken(authorizationCode, registrationId)
-        val userResourceNode: JsonNode = getUserResource(accessToken, registrationId) ?: throw IllegalArgumentException("유저 정보를 받아오지 못했습니다.")
+        val userResourceNode: JsonNode =
+            getUserResource(accessToken, registrationId) ?: throw IllegalArgumentException("유저 정보를 받아오지 못했습니다.")
         println("userResourceNode = $userResourceNode")
 
         val id = userResourceNode["id"].asText()
         val email = userResourceNode["email"].asText()
         val nickname = userResourceNode["name"].asText()
         val picture: String? = userResourceNode["picture"]?.asText()
-        println("id = $id")
-        println("email = $email")
-        println("nickname = $nickname")
 
-        val user = User(
-            snsSub = id,
-            loginType = LoginType.GOOGLE,
-            password = "",
-            email = email,
-            displayName = nickname,
-            picture32 = "",
-            picture96 = "",
-        )
-        userRepository.save(user)
-        return user
+        val loginType = LoginType.GOOGLE
+
+        return userQuerydslRepository.findByLoginTypeAndEmail(loginType, email) ?: run {
+            val newUser = User(
+                snsSub = id,
+                loginType = loginType,
+                password = null,
+                email = email,
+                displayName = nickname,
+                picture32 = "",
+                picture96 = "",
+            )
+            userRepository.save(newUser)
+            return newUser
+        }
     }
 }

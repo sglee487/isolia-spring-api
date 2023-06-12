@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.view.RedirectView
 import java.util.*
 
 
@@ -54,7 +55,7 @@ class UserController(
     @PostMapping("/user-login")
     fun loginUser(@RequestBody request: UserLoginRequest): ResponseEntity<*> {
         return try {
-            when(request.loginType) {
+            when (request.loginType) {
                 LoginType.EMAIL -> {
                     val user = userService.loginUser(request)
 
@@ -64,6 +65,7 @@ class UserController(
                     val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
                     ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
                 }
+
                 LoginType.GOOGLE -> {
                     println(request)
 //                    if (userService.isRegisteredUser(request)) {
@@ -101,12 +103,23 @@ class UserController(
                     val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
                     ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
                 }
+
                 else -> throw IllegalArgumentException("로그인 타입이 잘못되었습니다.")
             }
 
         } catch (e: IllegalArgumentException) {
             ResponseEntity(e.message, HttpStatus.UNAUTHORIZED)
         }
+    }
+
+    @GetMapping("/socialLogin/{registrationId}")
+    fun socialLogin(
+        @PathVariable registrationId: String
+    ): RedirectView {
+        println(registrationId)
+        val redirectView = RedirectView()
+        redirectView.url = ""
+        return redirectView
     }
 
     @RequestMapping(
@@ -125,7 +138,7 @@ class UserController(
         val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
 //        ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
         val modelAndView = ModelAndView()
-        modelAndView.viewName = "redirect:http://localhost:5173"
+        modelAndView.viewName = "redirect:http://localhost:5173/auth/callback/"
         modelAndView.addObject("jwt", jwt)
         modelAndView.addObject("user", user)
         return modelAndView

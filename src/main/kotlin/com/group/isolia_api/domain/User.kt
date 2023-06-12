@@ -19,7 +19,7 @@ data class User(
     @Enumerated(EnumType.STRING)
     val loginType: LoginType = LoginType.EMAIL,
     val email: String,
-    var password: String,
+    var password: String?,
     var displayName: String,
     var picture32: String?,
     var picture96: String?,
@@ -30,7 +30,11 @@ data class User(
     val id: Long? = null
 ) {
 
-    fun getUserSub(): UserSub = UserSub(id!!, loginType, email)
+    fun getUserSub(): UserSub = UserSub(
+        id ?: run { throw IllegalArgumentException("Not user id exist. May be not registered.") },
+        loginType,
+        email
+    )
 
     fun updateUser(
         displayName: String?,

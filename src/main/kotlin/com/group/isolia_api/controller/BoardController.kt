@@ -16,6 +16,8 @@ import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import java.net.URL
+import java.nio.file.Paths
 
 
 @RestController
@@ -28,6 +30,17 @@ class BoardController(
 ) {
 
     private val jwtManager: JWTManager = JWTManager(jwtSecret)
+    fun MultipartFile.toFile() = s3Service.changeImageMultipartFileToFile(this)
+
+    fun generateImageUrl(file: MultipartFile, uploadPath: String): URL {
+        val fileName = file.originalFilename ?: throw IllegalArgumentException("Invalid file name")
+        val (fileNameNoExt, fileExtension) = fileName.split(".")
+        val uploadFileName = "${fileNameNoExt}_${System.currentTimeMillis()}.$fileExtension"
+        val uploadFilePath = Paths.get(uploadPath, uploadFileName).toString()
+
+        s3Service.uploadToS3(uploadFilePath, file.toFile())
+        return s3Service.getUrlFromS3(uploadFilePath)
+    }
 
     @ResponseBody
     @PostMapping("/board")
@@ -117,15 +130,11 @@ class BoardController(
     fun uploadImageFiles(
         @RequestHeader("Authorization") authorization: String,
         imageFiles: List<MultipartFile>
-    ): List<String> {
+    ): List<URL> {
         val token = authorization.substringAfter("Bearer ")
         val userSub = Json.decodeFromString<UserSub>(jwtManager.decodeJWT(token))
-        val imageUrls = mutableListOf<String>()
-        for (imageFile in imageFiles) {
-            imageUrls.add(s3Service.generateImageUrl(imageFile, "board/${userSub.id}"))
+        return imageFiles.map { imageFile ->
+            generateImageUrl(imageFile, "board/${userSub.id}")
         }
-        return imageUrls
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.group.isolia_api.domain
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import java.net.URL
 import javax.persistence.*
 
 
@@ -21,8 +22,8 @@ data class User(
     val email: String,
     var password: String?,
     var displayName: String,
-    var picture32: String?,
-    var picture96: String?,
+    var picture32: URL?,
+    var picture96: URL?,
     var active: Boolean = true,
 
     @Id
@@ -40,8 +41,8 @@ data class User(
         displayName: String?,
         password: String,
         newPassword: String?,
-        picture32: String?,
-        picture96: String?,
+        picture32: URL?,
+        picture96: URL?,
     ) {
         if (!encoder.matches(password, this.password)) {
             throw IllegalArgumentException("비밀번호가 틀렸습니다.")

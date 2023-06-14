@@ -1,6 +1,5 @@
 package com.group.isolia_api.controller
 
-import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.schemas.user.request.*
 import com.group.isolia_api.schemas.user.response.UserCreateResponse
 import com.group.isolia_api.schemas.user.response.UserLoginResponse
@@ -23,6 +22,8 @@ class UserController(
     private val userService: UserService,
     @Value("\${spring.env.jwt-secret-key}")
     private val jwtSecret: String,
+    @Value("\${spring.env.auth-callback-url}")
+    private val authCallbackUrl: String,
 ) {
 
     private val jwtManager: JWTManager = JWTManager(jwtSecret)
@@ -55,58 +56,13 @@ class UserController(
     @PostMapping("/user-login")
     fun loginUser(@RequestBody request: UserLoginRequest): ResponseEntity<*> {
         return try {
-            when (request.loginType) {
-                LoginType.EMAIL -> {
-                    val user = userService.loginUser(request)
+            val user = userService.loginUser(request)
 
-                    val userSub = user.getUserSub()
-                    val encodedUserSub = Json.encodeToString(userSub)
-                    val exp: Long = 60 * 8
-                    val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
-                    ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
-                }
-
-                LoginType.GOOGLE -> {
-                    println(request)
-//                    if (userService.isRegisteredUser(request)) {
-//                        val user = userService.loginUser(request)
-//                        val userSub = user.getUserSub()
-//                        val encodedUserSub = Json.encodeToString(userSub)
-//                        val exp: Long = 60 * 8
-//                        val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
-//                        ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
-//                    } else {
-//                        val user = userService.registerUser(
-//                            UserCreateRequest(
-//                                snsSub = request.snsToken,
-//                                loginType = request.loginType,
-//                                email = request.email!!,
-//                                password = "",
-//                                displayName = request.email,
-//                                picture32 = "",
-//                                picture96 = ""
-//                            )
-//                        )
-//                        println(request)
-//                        val userSub = user.getUserSub()
-//                        val encodedUserSub = Json.encodeToString(userSub)
-//                        val exp: Long = 60 * 8
-//                        val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
-//
-//                        ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
-//                    }
-                    val user = userService.loginUser(request)
-
-                    val userSub = user.getUserSub()
-                    val encodedUserSub = Json.encodeToString(userSub)
-                    val exp: Long = 60 * 8
-                    val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
-                    ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
-                }
-
-                else -> throw IllegalArgumentException("로그인 타입이 잘못되었습니다.")
-            }
-
+            val userSub = user.getUserSub()
+            val encodedUserSub = Json.encodeToString(userSub)
+            val exp: Long = 60 * 8
+            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+            ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
         } catch (e: IllegalArgumentException) {
             ResponseEntity(e.message, HttpStatus.UNAUTHORIZED)
         }
@@ -138,9 +94,7 @@ class UserController(
         val token = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
 
         val modelAndView = ModelAndView()
-        modelAndView.viewName = "redirect:http://localhost:5173/auth/callback/"
-        modelAndView.addObject("token", token) // ?token=~~~~~~
-        modelAndView.addObject("user", encodedUserSub) // &user=~~~~~~
+        modelAndView.viewName = "redirect:$authCallbackUrl"
         modelAndView.addObject("userLoginResponse", UserLoginResponse(user, token, _exp = exp).encodedToJSON())
         return modelAndView
     }

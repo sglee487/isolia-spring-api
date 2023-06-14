@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
-import java.nio.file.Paths
+import java.net.URL
 
 @Component
 @Service
@@ -30,22 +30,26 @@ class S3Service(
         .withRegion(Regions.AP_NORTHEAST_2)
         .build()
 
-    private fun changeImageMultipartFileToFile(multipartFile: MultipartFile): File {
+    fun changeImageMultipartFileToFile(multipartFile: MultipartFile): File {
         val file = File.createTempFile("image", ".jpg")
         multipartFile.transferTo(file)
         return file
     }
 
-    fun generateImageUrl(file: MultipartFile, uploadPath: String): String {
-        val fileName = file.originalFilename ?: throw IllegalArgumentException("Invalid file name")
-        val (fileNameNoExt, fileExtension) =  fileName.split(".")
-        val uploadFileName = "${fileNameNoExt}_${System.currentTimeMillis()}.$fileExtension"
-        val uploadFilePath = Paths.get(uploadPath, uploadFileName).toString()
-
+    fun uploadToS3(uploadFilePath: String, file: File): String {
         try {
-            s3Client.putObject(bucket, uploadFilePath, changeImageMultipartFileToFile(file))
+            s3Client.putObject(bucket, uploadFilePath, file)
             val url = s3Client.getUrl(bucket, uploadFilePath)
             return url.toString()
+        } catch (e: AmazonServiceException) {
+            System.err.println(e.errorMessage)
+            throw e
+        }
+    }
+
+    fun getUrlFromS3(uploadFilePath: String): URL {
+        try {
+            return s3Client.getUrl(bucket, uploadFilePath)
         } catch (e: AmazonServiceException) {
             System.err.println(e.errorMessage)
             throw e

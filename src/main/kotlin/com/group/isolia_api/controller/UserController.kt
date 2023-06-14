@@ -8,6 +8,7 @@ import com.group.isolia_api.service.user.UserService
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -24,6 +25,7 @@ class UserController(
     private val jwtSecret: String,
     @Value("\${spring.env.auth-callback-url}")
     private val authCallbackUrl: String,
+    private val env: Environment,
 ) {
 
     private val jwtManager: JWTManager = JWTManager(jwtSecret)
@@ -72,9 +74,24 @@ class UserController(
     fun socialLogin(
         @PathVariable registrationId: String
     ): RedirectView {
-        println(registrationId)
+        val authorizeUrl = env.getProperty("oauth2.$registrationId.authorize-url") ?: throw Error("Invalid authorizeUrl")
+        val clientId = env.getProperty("oauth2.$registrationId.client-id") ?: throw Error("Invalid clientId")
+        val redirectUri = env.getProperty("oauth2.$registrationId.redirect-uri") ?: throw Error("Invalid redirectUri")
+        val scope = arrayListOf<String>(
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        )
+
+        val queryString = mapOf(
+            "response_type" to "code",
+            "client_id" to clientId,
+            "redirect_uri" to redirectUri,
+            "scope" to scope.joinToString(" ")
+        )
+        val authorizationUrl = authorizeUrl + "?" + queryString.entries.joinToString("&")
+
         val redirectView = RedirectView()
-        redirectView.url = ""
+            redirectView.url = authorizationUrl
         return redirectView
     }
 

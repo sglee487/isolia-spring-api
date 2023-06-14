@@ -119,12 +119,8 @@ class UserService(
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
-        println(params)
-        println(headers)
 
         val entity = HttpEntity(params, headers)
-
-        println(entity)
 
         val responseNode: ResponseEntity<JsonNode> = restTemplate.exchange(
             tokenUri, HttpMethod.POST, entity,
@@ -148,7 +144,6 @@ class UserService(
         val accessToken = getAccessToken(authorizationCode, registrationId)
         val userResourceNode: JsonNode =
             getUserResource(accessToken, registrationId) ?: throw IllegalArgumentException("유저 정보를 받아오지 못했습니다.")
-        println("userResourceNode = $userResourceNode")
 
         val id = userResourceNode["id"].asText()
         val email = userResourceNode["email"].asText()

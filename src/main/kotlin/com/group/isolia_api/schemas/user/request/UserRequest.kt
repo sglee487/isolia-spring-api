@@ -1,6 +1,7 @@
 package com.group.isolia_api.schemas.user.request
 
 import com.group.isolia_api.domain.LoginType
+import java.net.URL
 
 class UserCreateRequest(
     val snsSub: String?,
@@ -8,8 +9,8 @@ class UserCreateRequest(
     val email: String,
     val password: String,
     val displayName: String,
-    var picture32: String?,
-    var picture96: String?,
+    var picture32: URL?,
+    var picture96: URL?,
 )
 
 class UserUpdateRequest(
@@ -18,8 +19,8 @@ class UserUpdateRequest(
     val displayName: String?,
     val password: String,
     val newPassword: String?,
-    var picture32: String?,
-    var picture96: String?,
+    var picture32: URL?,
+    var picture96: URL?,
 )
 
 class UserLoginRequest(

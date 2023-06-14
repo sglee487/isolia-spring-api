@@ -3,6 +3,7 @@ package com.group.isolia_api.schemas.board.response
 import com.group.isolia_api.domain.Board
 import com.group.isolia_api.domain.User
 import com.group.isolia_api.schemas.comment.response.CommentGetResponse
+import java.net.URL
 import java.sql.Date
 
 
@@ -10,8 +11,8 @@ data class BoardUserInfo(
     val id: Long,
     val email: String,
     val displayName: String,
-    val picture32: String?,
-    val picture96: String?,
+    val picture32: URL?,
+    val picture96: URL?,
     val active: Boolean
 ) {
     companion object {

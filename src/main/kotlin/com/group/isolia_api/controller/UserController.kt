@@ -8,9 +8,12 @@ import com.group.isolia_api.service.user.UserService
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.view.RedirectView
 import java.util.*
 
 
@@ -19,7 +22,10 @@ import java.util.*
 class UserController(
     private val userService: UserService,
     @Value("\${spring.env.jwt-secret-key}")
-    private val jwtSecret: String = "default"
+    private val jwtSecret: String,
+    @Value("\${spring.env.auth-callback-url}")
+    private val authCallbackUrl: String,
+    private val env: Environment,
 ) {
 
     private val jwtManager: JWTManager = JWTManager(jwtSecret)
@@ -33,9 +39,9 @@ class UserController(
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
             val exp: Long = 60 * 8
-            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes=exp)
+            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
 
-            ResponseEntity(UserCreateResponse(user, jwt, _exp=exp), HttpStatus.CREATED)
+            ResponseEntity(UserCreateResponse(user, jwt, _exp = exp), HttpStatus.CREATED)
         } catch (e: Error) {
             ResponseEntity(HttpStatus.NOT_ACCEPTABLE)
         }
@@ -57,11 +63,56 @@ class UserController(
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
             val exp: Long = 60 * 8
-            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes=exp)
-
-            ResponseEntity(UserLoginResponse(user, jwt, _exp=exp), HttpStatus.OK)
+            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+            ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
         } catch (e: IllegalArgumentException) {
             ResponseEntity(e.message, HttpStatus.UNAUTHORIZED)
         }
+    }
+
+    @GetMapping("/socialLogin/{registrationId}")
+    fun socialLogin(
+        @PathVariable registrationId: String
+    ): RedirectView {
+        val authorizeUrl = env.getProperty("oauth2.$registrationId.authorize-url") ?: throw Error("Invalid authorizeUrl")
+        val clientId = env.getProperty("oauth2.$registrationId.client-id") ?: throw Error("Invalid clientId")
+        val redirectUri = env.getProperty("oauth2.$registrationId.redirect-uri") ?: throw Error("Invalid redirectUri")
+        val scope = arrayListOf<String>(
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.profile"
+        )
+
+        val queryString = mapOf(
+            "response_type" to "code",
+            "client_id" to clientId,
+            "redirect_uri" to redirectUri,
+            "scope" to scope.joinToString(" ")
+        )
+        val authorizationUrl = authorizeUrl + "?" + queryString.entries.joinToString("&")
+
+        val redirectView = RedirectView()
+            redirectView.url = authorizationUrl
+        return redirectView
+    }
+
+    @RequestMapping(
+        value = ["/login/oauth2/code/{registrationId}"],
+        method = [RequestMethod.GET],
+        produces = ["application/json"],
+    )
+    fun googleLogin(
+        @RequestParam code: String,
+        @PathVariable registrationId: String
+    ): ModelAndView {
+        val user = userService.socialLogin(code, registrationId)
+        val userSub = user.getUserSub()
+        val encodedUserSub = Json.encodeToString(userSub)
+        val exp: Long = 60 * 8
+        val token = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+
+        val modelAndView = ModelAndView()
+        modelAndView.viewName = "redirect:$authCallbackUrl"
+        modelAndView.addObject("userLoginResponse", UserLoginResponse(user, token, _exp = exp).encodedToJSON())
+        return modelAndView
     }
 }

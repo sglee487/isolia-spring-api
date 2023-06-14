@@ -2,6 +2,9 @@ package com.group.isolia_api.schemas.user.response
 
 import com.group.isolia_api.domain.LoginType
 import com.group.isolia_api.domain.User
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URL
 
 class UserCreateResponse(
     private val user: User,
@@ -12,8 +15,8 @@ class UserCreateResponse(
     val loginType: LoginType = user.loginType
     val email: String = user.email
     val displayName: String = user.displayName
-    var picture32: String? = user.picture32
-    var picture96: String? = user.picture96
+    var picture32: URL? = user.picture32
+    var picture96: URL? = user.picture96
     val jwt: String = _jwt
     val exp: Long? = _exp
 
@@ -29,8 +32,8 @@ class UserUpdateResponse(
     val loginType: LoginType = user.loginType
     val email: String = user.email
     val displayName: String = user.displayName
-    var picture32: String? = user.picture32
-    var picture96: String? = user.picture96
+    var picture32: URL? = user.picture32
+    var picture96: URL? = user.picture96
 
     override fun toString(): String {
         return "UserUpdateResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
@@ -46,13 +49,28 @@ class UserLoginResponse(
     val loginType: LoginType = user.loginType
     val email: String = user.email
     val displayName: String = user.displayName
-    var picture32: String? = user.picture32
-    var picture96: String? = user.picture96
+    var picture32: URL? = user.picture32
+    var picture96: URL? = user.picture96
     val jwt: String = _jwt
     val exp: Long? = _exp
 
 
     override fun toString(): String {
         return "UserLoginResponse(id=$id, loginType=$loginType, email='$email', displayName='$displayName', picture32=$picture32, picture96=$picture96)"
+    }
+
+    fun encodedToJSON(): String {
+        return Json.encodeToString(
+            mapOf<String, String>(
+                "id" to id.toString(),
+                "loginType" to loginType.value,
+                "email" to email,
+                "displayName" to displayName,
+                "picture32" to (picture32.toString() ?: ""),
+                "picture96" to (picture96.toString() ?: ""),
+                "jwt" to jwt,
+                "exp" to exp.toString()
+            )
+        )
     }
 }

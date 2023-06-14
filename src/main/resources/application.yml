@@ -1,6 +1,6 @@
 spring:
   env:
-    jwt-secret-key: 'MY_SECRET_KEY'
+    jwt-secret-key: 'jwt-secret-key'
   datasource:
     url: 'jdbc:h2:mem:library'
     username: 'user'
@@ -19,3 +19,15 @@ spring:
       path: '/h2-console'
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+cloud:
+  aws:
+    s3:
+      bucket: 'bucket-name'
+    region:
+      static: 'region-name'
+    stack:
+      auto: false
+    credentials:
+      accessKey: 'access-key'
+      secretKey: 'secret-key'

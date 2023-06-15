@@ -4,7 +4,7 @@ import com.group.isolia_api.domain.Board
 import com.group.isolia_api.domain.User
 import com.group.isolia_api.schemas.comment.response.CommentGetResponse
 import java.net.URL
-import java.sql.Date
+import java.time.LocalDateTime
 
 
 data class BoardUserInfo(
@@ -38,9 +38,9 @@ data class BoardGetResponse(
     val hits: Int,
     val likes: Int,
     val dislikes: Int,
-    val createdAt: Date,
-    val updatedAt: Date,
-    val deletedAt: Date?,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime?,
     val boardUserInfo: BoardUserInfo,
     val commentsSize: Int
 ) {
@@ -67,14 +67,15 @@ data class BoardGetResponse(
 
 data class BoardPostResponse(
     val id: Long,
+    val boardType: String,
     val title: String,
     val content: String,
     val hits: Int = 0,
     val likes: Int = 0,
     val dislikes: Int = 0,
-    val createdAt: Date,
-    val updatedAt: Date,
-    val deletedAt: Date?,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
+    val deletedAt: LocalDateTime?,
     val userInfo: BoardUserInfo,
     val comments: List<CommentGetResponse>
 ) {
@@ -82,6 +83,7 @@ data class BoardPostResponse(
         fun of(board: Board, user: User): BoardPostResponse {
             return BoardPostResponse(
                 id = board.id!!,
+                boardType = board.boardType.name,
                 title = board.title,
                 content = board.content,
                 hits = board.hits,

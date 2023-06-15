@@ -14,6 +14,8 @@ import io.jsonwebtoken.security.SignatureException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.net.URL
@@ -85,29 +87,27 @@ class BoardController(
         @RequestHeader("Authorization") authorization: String,
         @PathVariable("boardId") boardId: Long,
         @RequestBody requestBody: CommentCreateRequest
-    ): Long {
+    ): ResponseEntity<Long> {
         try {
             val token = authorization.substringAfter("Bearer ")
 
             val userSub = Json.decodeFromString<UserSub>(jwtManager.decodeJWT(token))
 
-            return boardService.createComment(requestBody, boardId, userSub)
+            val postId = boardService.createComment(requestBody, boardId, userSub)
+
+            return ResponseEntity(postId, HttpStatus.CREATED)
         } catch (e: MalformedJwtException) {
             // 토큰 형식이 유효하지 않음
-            println("jwt malformed")
-            return 0
+            throw IllegalAccessError("jwt malformed")
         } catch (e: ExpiredJwtException) {
             // 토큰 만료
-            println("jwt expired")
-            return 0
+            throw IllegalAccessError("jwt expired")
         } catch (e: SignatureException) {
             // 서명(키) 불일치
-            println("jwt signature error")
-            return 0
+            throw IllegalAccessError("jwt signature error")
         } catch (e: IllegalArgumentException) {
             // 토큰이 비어있거나, null
-            println("jwt is empty")
-            return 0
+            throw IllegalAccessError("jwt is empty")
         }
 
     }

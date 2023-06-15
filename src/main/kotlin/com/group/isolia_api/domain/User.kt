@@ -2,6 +2,7 @@ package com.group.isolia_api.domain
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.net.URL
+import java.time.LocalDateTime
 import javax.persistence.*
 
 
@@ -25,6 +26,9 @@ data class User(
     var picture32: URL?,
     var picture96: URL?,
     var active: Boolean = true,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    var deletedAt: LocalDateTime? = null,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

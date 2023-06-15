@@ -66,8 +66,8 @@ class UserLoginResponse(
                 "loginType" to loginType.value,
                 "email" to email,
                 "displayName" to displayName,
-                "picture32" to (picture32.toString() ?: ""),
-                "picture96" to (picture96.toString() ?: ""),
+                "picture32" to picture32.toString(),
+                "picture96" to picture96.toString(),
                 "jwt" to jwt,
                 "exp" to exp.toString()
             )

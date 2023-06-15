@@ -59,6 +59,7 @@ class BoardService(
 
     @Transactional
     fun getBoard(id: Long): BoardPostResponse? = boardRepository.getByIdAndActiveIsTrue(id)?.let { board ->
+        board.hits++
         BoardPostResponse.of(board, board.user)
     }
 }

@@ -39,7 +39,7 @@ class UserController(
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
             val expMinutes: Long = 60 * 8
-            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+            val (jwt, exp) = jwtManager.generateJwtToken(encodedUserSub, minutes = expMinutes)
 
             ResponseEntity(UserCreateResponse(user, jwt, _exp = exp), HttpStatus.CREATED)
         } catch (e: Error) {
@@ -62,8 +62,8 @@ class UserController(
 
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
-            val exp: Long = 60 * 8
-            val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+            val expMinutes: Long = 60 * 8
+            val (jwt, exp) = jwtManager.generateJwtToken(encodedUserSub, minutes = expMinutes)
             ResponseEntity(UserLoginResponse(user, jwt, _exp = exp), HttpStatus.OK)
         } catch (e: IllegalArgumentException) {
             ResponseEntity(e.message, HttpStatus.UNAUTHORIZED)
@@ -109,11 +109,11 @@ class UserController(
         val userSub = user.getUserSub()
         val encodedUserSub = Json.encodeToString(userSub)
         val expMinutes: Long = 60 * 8
-        val (token, expDate) = jwtManager.generateJwtToken(encodedUserSub, minutes = expMinutes)
+        val (jwt, exp) = jwtManager.generateJwtToken(encodedUserSub, minutes = expMinutes)
 
         val modelAndView = ModelAndView()
         modelAndView.viewName = "redirect:$authCallbackUrl"
-        modelAndView.addObject("userLoginResponse", UserLoginResponse(user, token, _exp = expDate).encodedToJSON())
+        modelAndView.addObject("userLoginResponse", UserLoginResponse(user, jwt, _exp = exp).encodedToJSON())
         return modelAndView
     }
 }

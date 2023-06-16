@@ -5,6 +5,7 @@ import com.group.isolia_api.domain.User
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.URL
+import java.util.*
 
 class UserCreateResponse(
     private val user: User,
@@ -43,7 +44,7 @@ class UserUpdateResponse(
 class UserLoginResponse(
     private val user: User,
     private val _jwt: String,
-    private val _exp: Long?
+    private val _exp: Date?
 ) {
     val id: Long = user.id!!
     val loginType: LoginType = user.loginType
@@ -52,7 +53,7 @@ class UserLoginResponse(
     var picture32: URL? = user.picture32
     var picture96: URL? = user.picture96
     val jwt: String = _jwt
-    val exp: Long? = _exp
+    val exp: Date? = _exp
 
 
     override fun toString(): String {

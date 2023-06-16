@@ -11,15 +11,21 @@ import java.util.*
 
 class JWTManager(private val jwtSecret: String) {
 
-    fun generateJwtToken(jwtSub: String, minutes: Long? = null): String {
+    fun generateJwtToken(jwtSub: String, minutes: Long? = null): Pair<String, Date> {
         val key = Keys.hmacShaKeyFor(jwtSecret.toByteArray(StandardCharsets.UTF_8))
-        return Jwts.builder()
-            .setSubject(jwtSub)
-            .setIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toInstant()))
-            .setExpiration(Date.from(LocalDateTime.now().plusMinutes(minutes ?: (60 * 2)).atZone(ZoneId.of("Asia/Seoul")).toInstant()))
-            .signWith(key, SignatureAlgorithm.HS256)
-            .compact()
+        val expiration = LocalDateTime.now().plusMinutes(minutes ?: (60 * 2))
+        val expirationDate = Date.from(expiration.atZone(ZoneId.of("Asia/Seoul")).toInstant())
+
+        return Pair(
+            Jwts.builder()
+                .setSubject(jwtSub)
+                .setIssuedAt(Date.from(LocalDateTime.now().atZone(ZoneId.of("Asia/Seoul")).toInstant()))
+                .setExpiration(expirationDate)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact(), expirationDate
+        )
     }
+
 
     fun decodeJWT(token: String): String {
         // get sub from decoded token

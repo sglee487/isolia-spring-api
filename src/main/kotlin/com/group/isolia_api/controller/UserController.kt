@@ -38,7 +38,7 @@ class UserController(
 
             val userSub = user.getUserSub()
             val encodedUserSub = Json.encodeToString(userSub)
-            val exp: Long = 60 * 8
+            val expMinutes: Long = 60 * 8
             val jwt = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
 
             ResponseEntity(UserCreateResponse(user, jwt, _exp = exp), HttpStatus.CREATED)
@@ -74,7 +74,8 @@ class UserController(
     fun socialLogin(
         @PathVariable registrationId: String
     ): RedirectView {
-        val authorizeUrl = env.getProperty("oauth2.$registrationId.authorize-url") ?: throw Error("Invalid authorizeUrl")
+        val authorizeUrl =
+            env.getProperty("oauth2.$registrationId.authorize-url") ?: throw Error("Invalid authorizeUrl")
         val clientId = env.getProperty("oauth2.$registrationId.client-id") ?: throw Error("Invalid clientId")
         val redirectUri = env.getProperty("oauth2.$registrationId.redirect-uri") ?: throw Error("Invalid redirectUri")
         val scope = arrayListOf<String>(
@@ -91,7 +92,7 @@ class UserController(
         val authorizationUrl = authorizeUrl + "?" + queryString.entries.joinToString("&")
 
         val redirectView = RedirectView()
-            redirectView.url = authorizationUrl
+        redirectView.url = authorizationUrl
         return redirectView
     }
 
@@ -107,12 +108,12 @@ class UserController(
         val user = userService.socialLogin(code, registrationId)
         val userSub = user.getUserSub()
         val encodedUserSub = Json.encodeToString(userSub)
-        val exp: Long = 60 * 8
-        val token = jwtManager.generateJwtToken(encodedUserSub, minutes = exp)
+        val expMinutes: Long = 60 * 8
+        val (token, expDate) = jwtManager.generateJwtToken(encodedUserSub, minutes = expMinutes)
 
         val modelAndView = ModelAndView()
         modelAndView.viewName = "redirect:$authCallbackUrl"
-        modelAndView.addObject("userLoginResponse", UserLoginResponse(user, token, _exp = exp).encodedToJSON())
+        modelAndView.addObject("userLoginResponse", UserLoginResponse(user, token, _exp = expDate).encodedToJSON())
         return modelAndView
     }
 }

@@ -48,6 +48,7 @@ dependencies {
     runtimeOnly ("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly ("io.jsonwebtoken:jjwt-jackson:0.11.5") // or 'io.jsonwebtoken:jjwt-gson:JJWT_RELEASE_VERSION' for gson
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation ("org.jsoup:jsoup:1.16.1")
 
     // ✅ querydsl을 설치합니다
     implementation("com.querydsl:querydsl-jpa:5.0.0")

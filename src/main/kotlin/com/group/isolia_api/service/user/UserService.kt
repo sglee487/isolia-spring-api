@@ -8,6 +8,7 @@ import com.group.isolia_api.repository.user.UserRepository
 import com.group.isolia_api.schemas.user.request.UserCreateRequest
 import com.group.isolia_api.schemas.user.request.UserLoginRequest
 import com.group.isolia_api.schemas.user.request.UserUpdateRequest
+import com.group.isolia_api.service.ImageUtils
 import com.group.isolia_api.service.S3Service
 import org.springframework.core.env.Environment
 import org.springframework.http.*
@@ -17,12 +18,8 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
-import java.awt.Image
-import java.awt.image.BufferedImage
 import java.net.URI
 import java.net.URL
-import java.nio.file.Paths
-import java.util.*
 import javax.imageio.ImageIO
 
 
@@ -36,28 +33,13 @@ class UserService(
     private val encoder = BCryptPasswordEncoder()
     private val restTemplate = RestTemplate()
 
-    fun resizeImage(image: BufferedImage, width: Int, height: Int): BufferedImage {
-        val resizedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        val graphics = resizedImage.createGraphics()
-        graphics.drawImage(image.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null)
-        graphics.dispose()
-        return resizedImage
-    }
-
-    fun generateProfileUrls(pictureUrl: URL): List<URL> {
-        val pictureName = UUID.randomUUID().toString()
+    fun generateProfileUrls(pictureUrl: URL, imageName: String): List<URL> {
         val originalImage = ImageIO.read(pictureUrl)
 
         val profileUrls = intArrayOf(32, 96).map { size ->
-            val resizedImage = resizeImage(originalImage, size, size)
-            val uploadPath = "profile_images/${size}/${pictureName}.jpg"
-            val file = Paths.get("temp","${pictureName}_${size}.jpg").toFile()
-            ImageIO.write(resizedImage, "jpg", file)
-            s3Service.uploadToS3(uploadPath, file)
-            file.delete()
-
-            s3Service.getUrlFromS3(uploadPath)
-
+            val resizedImage = ImageUtils.resizeImage(originalImage, size, size)
+            val uploadPath = "profile_images/${size}/${imageName}"
+            s3Service.uploadImageToS3(resizedImage, uploadPath)
         }
         return profileUrls
     }
@@ -156,7 +138,8 @@ class UserService(
 
             val profileUrls = picture?.let {
                 val pictureUrl = URI.create(picture).toURL()
-                generateProfileUrls(pictureUrl)
+                val imageName = "${email}_${loginType.value}.jpg"
+                generateProfileUrls(pictureUrl, imageName)
             } ?: listOf(null, null)
 
             val newUser = User(

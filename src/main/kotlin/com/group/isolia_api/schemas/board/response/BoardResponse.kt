@@ -34,7 +34,7 @@ data class BoardGetResponse(
     val boardType: String,
     val title: String,
     val previewText: String,
-    val previewImage: String?,
+    val previewImage: URL?,
     val hits: Int,
     val likes: Int,
     val dislikes: Int,

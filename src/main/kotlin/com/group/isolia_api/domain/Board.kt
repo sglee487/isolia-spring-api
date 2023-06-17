@@ -1,5 +1,6 @@
 package com.group.isolia_api.domain
 
+import java.net.URL
 import java.time.LocalDateTime
 import javax.persistence.*
 
@@ -11,7 +12,7 @@ class Board(
     @Column(columnDefinition = "TEXT")
     var content: String,
     var previewText: String,
-    var previewImage: String?,
+    var previewImage: URL?,
     var hits: Int = 0,
     var likes: Int = 0,
     var dislikes: Int = 0,

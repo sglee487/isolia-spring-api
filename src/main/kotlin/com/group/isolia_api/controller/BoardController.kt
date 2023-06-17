@@ -14,6 +14,7 @@ import io.jsonwebtoken.security.SignatureException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.Page
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -113,12 +114,8 @@ class BoardController(
     }
 
     @GetMapping("/board")
-    fun getPosts(@RequestParam("boardType") boardType: BoardType?): List<BoardGetResponse> {
-        return if (boardType == BoardType.ALL) {
-            boardService.getBoardList()
-        } else {
-            boardService.getBoardList(boardType)
-        }
+    fun getPosts(@RequestParam("boardType") boardType: BoardType = BoardType.ALL, @RequestParam("page") page: Int = 1): Page<BoardGetResponse> {
+        return boardService.getBoardList(boardType, page)
     }
 
     @GetMapping("/post/", "/post/{id}")

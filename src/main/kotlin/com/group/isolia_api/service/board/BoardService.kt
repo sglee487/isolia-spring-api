@@ -12,6 +12,7 @@ import com.group.isolia_api.schemas.board.request.BoardPostCreateRequest
 import com.group.isolia_api.schemas.board.response.BoardGetResponse
 import com.group.isolia_api.schemas.board.response.BoardPostResponse
 import com.group.isolia_api.schemas.comment.request.CommentCreateRequest
+import org.springframework.data.domain.Page
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -52,10 +53,13 @@ class BoardService(
     }
 
     @Transactional
-    fun getBoardList(boardType: BoardType? = null): List<BoardGetResponse> =
-        boardQuerydslRepository.getBoardList(boardType).map { board ->
+    fun getBoardList(boardType: BoardType, page: Int): Page<BoardGetResponse> {
+        val result = boardQuerydslRepository.getBoardList(boardType, page)
+
+        return result.map { board ->
             BoardGetResponse.of(board, board.user)
         }
+    }
 
     @Transactional
     fun getBoard(id: Long): BoardPostResponse? = boardRepository.getByIdAndActiveIsTrue(id)?.let { board ->

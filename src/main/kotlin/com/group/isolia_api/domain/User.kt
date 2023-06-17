@@ -3,6 +3,7 @@ package com.group.isolia_api.domain
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import java.net.URL
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import javax.persistence.*
 
 
@@ -26,8 +27,8 @@ data class User(
     var picture32: URL?,
     var picture96: URL?,
     var active: Boolean = true,
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: LocalDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+    var updatedAt: LocalDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
     var deletedAt: LocalDateTime? = null,
 
     @Id

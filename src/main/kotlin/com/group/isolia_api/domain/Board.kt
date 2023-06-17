@@ -2,6 +2,7 @@ package com.group.isolia_api.domain
 
 import java.net.URL
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import javax.persistence.*
 
 @Entity
@@ -17,8 +18,8 @@ class Board(
     var likes: Int = 0,
     var dislikes: Int = 0,
     var active: Boolean = true,
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    var updatedAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: LocalDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+    var updatedAt: LocalDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
     var deletedAt: LocalDateTime? = null,
 
     @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)

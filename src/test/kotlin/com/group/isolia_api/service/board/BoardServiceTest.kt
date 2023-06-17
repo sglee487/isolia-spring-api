@@ -100,20 +100,21 @@ class BoardServiceTest @Autowired constructor(
         }
 
         // then
-        val boardList = boardService.getBoardList()
-        assertThat(boardList.size).isEqualTo(noticeLength + freeLength)
-        val noticeList = boardService.getBoardList(BoardType.NOTICE)
-        assertThat(noticeList.size).isEqualTo(noticeLength)
-        val freeList = boardService.getBoardList(BoardType.FREE)
-        assertThat(freeList.size).isEqualTo(freeLength)
+        val boardListPage = boardService.getBoardList(BoardType.ALL, 1)
+        assertThat(boardListPage.content.size).isEqualTo(noticeLength + freeLength)
+        val noticeListPage = boardService.getBoardList(BoardType.NOTICE, 1)
+        println(noticeListPage)
+        assertThat(noticeListPage.content.size).isEqualTo(noticeLength)
+        val freeListPage = boardService.getBoardList(BoardType.FREE, 1)
+        assertThat(freeListPage.content.size).isEqualTo(freeLength)
 
         for (i in 0 until noticeLength) {
-            assertThat(noticeList[i].title).isEqualTo("이것은 공지_${i}")
-            assertThat(noticeList[i].boardUserInfo).isEqualTo(BoardUserInfo.of(user))
+            assertThat(noticeListPage.content[i].title).isEqualTo("이것은 공지_${noticeLength - 1 - i}")
+            assertThat(noticeListPage.content[i].boardUserInfo).isEqualTo(BoardUserInfo.of(user))
         }
         for (i in 0 until freeLength) {
-            assertThat(freeList[i].title).isEqualTo("이것은 자유_${i}")
-            assertThat(freeList[i].boardUserInfo).isEqualTo(BoardUserInfo.of(user))
+            assertThat(freeListPage.content[i].title).isEqualTo("이것은 자유_${freeLength - 1 - i}")
+            assertThat(freeListPage.content[i].boardUserInfo).isEqualTo(BoardUserInfo.of(user))
         }
 
         val results = boardRepository.findAll()

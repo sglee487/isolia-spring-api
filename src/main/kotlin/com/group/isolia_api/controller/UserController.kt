@@ -18,7 +18,7 @@ import java.util.*
 
 
 @RestController
-@CrossOrigin(origins = ["*"])
+@CrossOrigin(origins = ["http://localhost:5173", "https://isolia.shop"])
 class UserController(
     private val userService: UserService,
     @Value("\${spring.env.jwt-secret-key}")

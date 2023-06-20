@@ -14,7 +14,7 @@ import java.util.*
 
 @Configuration
 @EnableWebSocketMessageBroker
-@CrossOrigin(origins = ["http://localhost:5173"])
+@CrossOrigin(origins = ["http://localhost:5173", "https://isolia.shop"])
 class MineSweeperWebSocketConfig : WebSocketMessageBrokerConfigurer {
 
     override fun configureMessageBroker(registry: MessageBrokerRegistry) {

@@ -20,7 +20,7 @@ import java.security.Principal
 import java.util.*
 
 @RestController
-@CrossOrigin(origins = ["*"])
+@CrossOrigin(origins = ["http://localhost:5173", "https://isolia.shop"])
 class MineSweeperController(
     val mineSweeperRepository: MineSweeperRepository,
     val simpleMessagingTemplate: SimpMessagingTemplate,

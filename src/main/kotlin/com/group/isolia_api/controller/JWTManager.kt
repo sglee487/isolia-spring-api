@@ -13,7 +13,7 @@ class JWTManager(private val jwtSecret: String) {
 
     fun generateJwtToken(jwtSub: String, minutes: Long? = null): Pair<String, Long> {
         val key = Keys.hmacShaKeyFor(jwtSecret.toByteArray(StandardCharsets.UTF_8))
-        val expiration = LocalDateTime.now().plusMinutes(minutes ?: (60 * 2))
+        val expiration = LocalDateTime.now(ZoneId.of("Asia/Seoul")).plusMinutes(minutes ?: (60 * 2))
         val expirationDate = Date.from(expiration.atZone(ZoneId.of("Asia/Seoul")).toInstant())
         val expirationDateInMillis = expiration.atZone(ZoneId.of("Asia/Seoul")).toInstant().toEpochMilli()
 
